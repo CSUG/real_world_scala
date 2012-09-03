@@ -214,9 +214,74 @@ addSbtPlugin("net.virtual-void" % "sbt-dependency-graph" % "0.6.0")
 > 其实， SBT为我们关了一扇窗，却开了另一道门， 我们可以使用giter8来自动化以上步骤。
 > giter8可以自动从github上抓取.g8项目模板，并自动在本地生成相应的项目结构， 比如笔者在github上创建了xsbt.g8项目模板，则直接执行`"g8 fujohnwang/xsbt"`就可以在本地自动生成一个sbt的项目。 有关giter8的更多信息可参考<https://github.com//giter8>.
 
+
 ### SBT的使用
+SBT支持两种使用方式：
+
+1. 批处理模式(batch mode)
+2. 可交互模式(interactive mode)
+
+批处理模式是指我们可以在命令行模式下直接依次执行多个SBT命令， 比如:
+
+```
+$ sbt compile test package
+```
+
+而可交互模式则直接运行sbt，后面不跟任何SBT命令，在这种情况下， 我们将直接进入sbt控制台(console)， 在sbt控制台中，我们可以输入任何合法的sbt命令并获得相应的反馈：
+
+```
+$ sbt
+> compile
+[success] Total time: 1 s, completed Sep 3, 2012 9:34:58 PM
+> test
+[info] No tests to run for test:test
+[success] Total time: 0 s, completed Sep 3, 2012 9:35:04 PM
+> package
+[info] Packaging XXX_XXX_2.9.2-0.1-SNAPSHOT.jar ...
+[info] Done packaging.
+[success] Total time: 0 s, completed Sep 3, 2012 9:35:08 PM
+``` 
+
+> TIPS
+> 
+> 在可交互模式的sbt控制台下，可以输入help获取进一步的使用信息。
+
+在以上实例中，我们依次执行了compile， test和package命令， 实际上， 这些命令之间是有依赖关系的，如果仅仅是为了package，那么，只需要执行package命令即可， package命令依赖的compile和test命令将先于package命令执行，以保证它们之间的依赖关系得以满足。
+
+除了compile，test和package命令， 下面列出了更多可用的sbt命令供读者参考:
+
+* compile
+* test-compile
+* run
+* test
+* package
+
+这些命令在某些情况下也可以结合SBT的触发执行(Trigger Execution)机制一起使用， 唯一需要做的就只是在相应的命令前追加`~ `符号，实际上，这个特性是让笔者最着迷的， 比如:
+
+```
+$ sbt ~compile
+```
+
+以上命令意味着， 我更改了任何源代码并且保存之后，将直接触发SBT编译相应的源代码以及相应的依赖变更。 假如我们有2个显示器， 左边是命令行窗口，右边是编辑器或者IDE窗口，那么，我们只要在右边的显示器中编辑源代码，左边的显示器就可以实时的反馈编译结果， 这将极大加快开发的迭代速度， 听起来并且看起来是不是很cool？！
+
+> NOTE
+>
+> 原则上， `~`和相应命令之间应该用空格分隔，不过对于一般的命令来讲，直接前缀`~`也是可以的，就跟我们使用`~compile`的方式一样。
+
+
+// TODO 加入图片链接
+
 
 ### SBT的依赖管理
+
+* scope
+	- compile
+	- test
+* dependency include
+* dependency exclude
+* resolovers - where to find the proper dependencies
+
+
 
 
 
