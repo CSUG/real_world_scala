@@ -274,17 +274,70 @@ $ sbt ~compile
 
 ### SBT的依赖管理
 
-* scope
-	- compile
-	- test
-* dependency include
-* dependency exclude
-* resolovers - where to find the proper dependencies
+在SBT中， 类库的依赖管理可以分为两类：
 
+1. unmanaged dependencies
+2. managed dependencies
 
+大部分情况下，我们会采用managed dependencies方式来管理依赖关系，但也不排除为了快速构建项目环境等特殊情况下，直接使用unmanaged dependencies来管理依赖关系。
 
+#### Unmanaged Dependencies简介
 
+要使用unmanaged dependencies的方式来管理依赖其实很简单，只需要将想要放入当前项目classpath的jar包放到__lib__目录下即可。
 
+如果对默认的lib目录看着不爽， 我们也可以通过配置来更改这个默认位置，比如使用3rdlibs:
+
+```scala
+unmanagedBase <<= baseDirectory { base => base / "3rdlibs" }
+```
+
+这里可能需要解释一下以上配置。 首先unmanagedBase这个Key用来表示unmanaged dependencies存放第三方jar包的路径， 具体的值默认是__lib__， 我们为了改变这个Key的值， 采用<<=操作符， 根据baseDirectory的值转换并计算出一个新值赋值给unmanagedBase这个Key， 其中， baseDirectory指的是当前项目目录，而<<=操作符(其实是Key的方法)则负责从已知的某些Key的值计算出新的值并赋值给指定的Key。
+
+关于Unmanaged dependencies，一般情况下，需要知道的基本上就这些。
+
+#### Managed Dependencies详解
+
+sbt的managed dependencies采用Apache Ivy的依赖管理方式， 可以支持从Maven或者Ivy的Repository中自动下载相应的依赖。
+
+简单来说，在SBT中， 使用managed dependencies基本上就意味着往__libraryDependencies__这个Key中添加所需要的依赖， 添加的一般格式如下:
+
+> libraryDependencies += groupID % artifactID % revision
+
+比如： 
+
+> libraryDependencies += "org.apache.derby" % "derby" % "10.4.1.3"
+
+这种格式其实是简化的常见形式，实际上，我们还可以做更多微调， 比如：
+
+```scala
+(1) libraryDependencies += "org.apache.derby" % "derby" % "10.4.1.3" % "test"
+(2) libraryDependencies += "org.apache.derby" % "derby" % "10.4.1.3" exclude("org", "artifact")
+(3) libraryDependencies += "org.apache.derby" %% "derby" % "10.4.1.3" 
+```
+
+(1)的形式允许我们限定依赖的范围只限于测试期间； (2)的形势允许我们排除递归依赖中某些我们需要排除的依赖； (3)的形式则会在依赖查找的时候，将当前项目使用的scala版本号追加到artifactId之后作为完整的artifactId来查找依赖，比如如果我们的项目使用scala2.9.2，那么(3)的依赖声明实际上等同于`"org.apache.derby" %% "derby_2.9.2" % "10.4.1.3"`，这种方式更多是为了简化同一依赖类库存在有多个Scala版本对应的发布的情况。
+
+如果有一堆依赖要添加，一行一行的添加是一种方式，其实也可以一次添加多个依赖：
+
+```scala
+libraryDependencies ++= Seq("org.apache.derby" %% "derby" % "10.4.1.3",
+                            "org.scala-tools" %% "scala-stm" % "0.3", 
+                            ...)
+```
+
+#### Resovers简介
+
+对于managed dependencies来说，虽然我们指定了依赖哪些类库，但有没有想过，SBT是如何知道到哪里去抓取这些类库和相关资料那？！
+
+实际上，默认情况下， SBT回去默认的Maven2的Repository中抓取依赖，但如果默认的Repository中找不到我们的依赖，那我们可以通过resolver机制，追加更多的repository让SBT去查找并抓取， 比如：
+
+> resolvers += "Sonatype OSS Snapshots" at "https://oss.sonatype.org/content/repositories/snapshots"
+
+at^[at实际上是String类型进行了隐式类型转换(Implicit conversion)后目标类型的方法名]之前是要追加的repository的标志名称（任意取），at后面则是要追加的repository的路径。
+
+除了可远程访问的Maven Repo，我们也可以将本地的Maven Repo追加到resolver的搜索范围：
+
+> resolvers += "Local Maven Repository" at "file://"+Path.userHome.absolutePath+"/.m2/repository" 
 
 
 ## SBT进阶篇
