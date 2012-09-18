@@ -8,7 +8,7 @@ SBT是Simple Build Tool的简称，如果读者使用过Maven，那么可以简�
 
 * 使用Scala作为DSL来定义build文件（one language rules them all）;
 * 通过触发执行(trigger execution)特性支持持续的编译与测试；
-* 增量编译；
+* 增量编译；^[SBT的增量编译支持因为如此优秀，已经剥离为Zinc，可被Eclipse, Maven,Gradle等使用]
 * 可以混合构建Java和Scala项目；
 * 并行的任务执行；
 * 可以重用Maven或者ivy的repository进行依赖管理；
