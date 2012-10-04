@@ -343,8 +343,43 @@ at^[at实际上是String类型进行了隐式类型转换(Implicit conversion)�
 ## SBT进阶篇
 
 ### .scala形式的build定义
+对于简单的项目来讲，.sbt形式的build定义文件就可以满足需要了，但如果我们想要使用SBT的一些高级特性，比如自定义Task， 多模块的项目构建， 就必须使用.scala形式的build定义了。 简单来讲，.sbt能干的事情，.scala形式的build定义都能干，反之，则不然。
+
+要使用.scala形式的build定义，只要在当前项目根目录下的project/子目录下新建一个.scala后缀名的scala源代码文件即可，比如Build.scala（名称可以任意，一般使用Build.scala）：
+
+```scala
+import sbt._
+import Keys._
+
+object HelloBuild extends Build {
+	override lazy val settings = super.settings ++ Seq(..)
+	
+	lazy val root = Project(id = "hello",
+                            base = file("."),
+                            settings = Project.defaultSettings ++ Seq(..))
+}
+```
+
+build的定义只要扩展sbt.Build，然后添加相应的逻辑即可，所有代码都是标准的scala代码，在Build定义中，我们可以添加更多的settings， 添加自定义的task，添加相应的val和方法定义等等， 更多代码实例可以参考SBT Wiki(<https://github.com/harrah/xsbt/wiki/Examples>)。
+
+	NOTE
+	
+	.sbt和.scala之间不得不说的那些事儿
+	
+	实际上， 两种形式并不排斥，并不是说我使用了前者，就不能使用后者，对于某些单一的项目来说，我们可以在.sbt中定义常用的settings，而在.scala中定义自定义的其它内容， SBT在编译期间，会将.sbt中的settings等定义与.scala中的定义合并，作为最终的build定义使用。
+	
+	只有在多模块项目构建中，为了避免多个.sbt的存在引入过多的繁琐，才会只用.scala形式的build定义。
+	
+	.sbt和.scala二者之间的settings是可互相访问的， .scala中的内容会被import到.sbt中，而.sbt中的settings也会被添加到.scala的settings当中。默认情况下，.sbt中的settings会被纳入Project级别的Scope中，除非明确指定哪些Settings定义的Scope； .scala中则可以将settings纳入Build级别的Scope，也可以纳入Project级别的Scope。
+
+
 ### 	自定义SBT Task
+
+
+
 ### 	SBT插件
+
+
 ### 	多模块工程管理(Multi-Module Project)
 
 
