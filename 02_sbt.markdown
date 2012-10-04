@@ -360,7 +360,7 @@ object HelloBuild extends Build {
 }
 ```
 
-build的定义只要扩展sbt.Build，然后添加相应的逻辑即可，所有代码都是标准的scala代码，在Build定义中，我们可以添加更多的settings， 添加自定义的task，添加相应的val和方法定义等等， 更多代码实例可以参考SBT Wiki(<https://github.com/harrah/xsbt/wiki/Examples>)。
+build的定义只要扩展sbt.Build，然后添加相应的逻辑即可，所有代码都是标准的scala代码，在Build定义中，我们可以添加更多的settings， 添加自定义的task，添加相应的val和方法定义等等， 更多代码实例可以参考SBT Wiki(<https://github.com/harrah/xsbt/wiki/Examples>)，另外，我们在后面介绍SBT的更多高级特性的时候，也会引入更多.scala形式的build定义的使用。
 
 	NOTE
 	
@@ -375,7 +375,92 @@ build的定义只要扩展sbt.Build，然后添加相应的逻辑即可，所有
 
 ### 	自定义SBT Task
 
+大部分情况下，我们都是使用SBT内建的Task，比如compile， run等，实际上， 除了这些，我们还可以在build定义中添加更多自定义的Task。
 
+自定义SBT的Task其实很简单，就跟把大象关冰箱里一样简单， 概况来说其实就是:
+
+1. 定义task；
+2. 将task添加到项目的settings当中；
+3. 使用自定义的task；
+
+#### 定义task
+
+Task的定义分两部分，第一部分就是要定义一个TaskKey来标志Task， 第二部分则是定义Task的执行逻辑。 
+
+假设我们要定义一个简单的打印"hello, sbt~"信息的task，那第一步就是先定义它的Key，如下代码所示：
+
+```scala
+val hello = TaskKey[Unit]("hello", "just say hello")
+```
+
+TaskKey的类型指定了对应task的执行结果，因为我们只想打印一个字符串，不需要返回什么数据，所以定义的是TaskKey[Unit]。 定义TaskKey最主要的一点就是要指定一个名称（比如第一个参数“hello”），这个名称将是我们调用该task的标志性建筑。 另外，还可以可选择的通过第二个参数传入该task的相应描述和说明。
+
+有了task对应的Key之后，我们就要定义task对应的执行逻辑，并通过`:=`方法将相应的key和执行逻辑定义关联到一起：
+
+```scala
+hello := {
+	println("hello, sbt~")
+}
+```
+
+完整的task定义代码如下所示：
+
+```scala
+val hello = TaskKey[Unit]("hello", "just say hello")
+
+hello := {
+	println("hello, sbt~")
+}
+```
+
+	NOTE
+	
+	:= 只是简单的将task的执行逻辑和key关联到一起， 如果之前已经将某一执行逻辑跟同一key关联过，则后者将覆盖前者，另外，如果我们想要服用其他的task的执行逻辑，或者依赖其他task，只有一个:=就有些力不从心了。这些情况下，可以考虑使用~=或者<<=等方法，他们可以借助之前的task来映射或者转换新的task定义。比如（摘自sbt wiki）:
+	// These two settings are equivalent
+	intTask <<= intTask map { (value: Int) => value + 1 }
+	intTask ~= { (value: Int) => value + 1 }
+
+#### 将task添加到项目的settings当中
+
+光完成了task的Key和执行逻辑定义还不够，我们要将这个task添加到项目的Settings当中才能使用它，所以，我们稍微对之前的代码做一补充：
+
+```scala
+object ProjectBuild extends Build {
+
+  val hello = TaskKey[Unit]("hello", "just say hello")
+
+  val helloTaskSetting = hello := {
+    println("hello, sbt~")
+  }
+
+  lazy val root = Project(id = "", base = file(".")).settings(Defaults.defaultSettings ++ Seq(helloTaskSetting): _*)
+
+}
+```
+
+将Key与task的执行逻辑相关联的过程实际上是构建某个Setting的过程，虽然我们也可以将以上定义写成如下形式:
+
+```scala
+  lazy val root = Project(id = "", base = file(".")).settings(Defaults.defaultSettings ++ Seq(hello := {
+    println("hello, sbt~")
+  }): _*)
+```
+
+但未免代码就太不雅观，也不好管理了(如果要添加多个自定义task，想想，用这种形式是不是会让代码丑陋不堪那？！)，所以，我们引入了helloTaskSetting这个标志常量来帮助我们净化代码结构 ：）
+
+#### 测试和运行定义的task
+
+万事俱备之后，就可以使用我们的自定义task了，使用定义Key的时候指定的task名称来调用它即可：
+	
+	$ sbt hello
+	hello, sbt~
+	// 或者
+	$ sbt
+	> hello
+	hello, sbt~
+	[success] Total time: 0 s, completed Oct 4, 2012 2:48:48 PM
+	
+怎么样？ 在SBT中自定义task是不是很简单那？！
 
 ### 	SBT插件
 
