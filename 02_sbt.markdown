@@ -481,7 +481,8 @@ object ProjectBuild extends Build {
 
 
 ## SBT扩展篇 - 使用SBT创建可自动补全的命令行应用程序
-	sbt boot launcher + sbt0.12 commands framework
+
+参看[我的这篇博客](http://fujohnwang.github.com/buld-interactive-command-line-app-with-sbt.html)， 这里不整理重写了， 偷懒ing~
 
 
 
