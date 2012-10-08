@@ -263,13 +263,11 @@ $ sbt ~compile
 ```
 
 以上命令意味着， 我更改了任何源代码并且保存之后，将直接触发SBT编译相应的源代码以及相应的依赖变更。 假如我们有2个显示器， 左边是命令行窗口，右边是编辑器或者IDE窗口，那么，我们只要在右边的显示器中编辑源代码，左边的显示器就可以实时的反馈编译结果， 这将极大加快开发的迭代速度， 听起来并且看起来是不是很cool？！
+![双屏使用SBT增量编译的演示图](images/dual_screen_on_incremental_compile.jpg)
 
 > NOTE
 >
 > 原则上， `~`和相应命令之间应该用空格分隔，不过对于一般的命令来讲，直接前缀`~`也是可以的，就跟我们使用`~compile`的方式一样。
-
-
-// TODO 加入图片链接
 
 
 ### SBT的依赖管理
@@ -372,6 +370,10 @@ build的定义只要扩展sbt.Build，然后添加相应的逻辑即可，所有
 	
 	.sbt和.scala二者之间的settings是可互相访问的， .scala中的内容会被import到.sbt中，而.sbt中的settings也会被添加到.scala的settings当中。默认情况下，.sbt中的settings会被纳入Project级别的Scope中，除非明确指定哪些Settings定义的Scope； .scala中则可以将settings纳入Build级别的Scope，也可以纳入Project级别的Scope。
 
+#### SBT项目结构的本质
+
+俄罗斯玩具娃娃
+‘为阐明plugins的配置位置和文件命名惯例做铺垫’
 
 ### 	自定义SBT Task
 
@@ -462,7 +464,14 @@ object ProjectBuild extends Build {
 	
 怎么样？ 在SBT中自定义task是不是很简单那？！
 
-### 	SBT插件
+### 	SBT Plugins
+通过dist自定义task引出assembly plugin，进而泛化SBT plugin的概念。
+
+#### Why Plugins Help
+
+#### How to write a SBT Plugin
+
+#### Useful Available Plugins
 
 
 ### 	多模块工程管理(Multi-Module Project)
