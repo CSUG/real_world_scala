@@ -6,6 +6,16 @@ _by fujohnwang_
 
 本人也不保证这本书可以持续更新甚至书写完成，本人更不保证会一直把它挂在github上，总之，爱看不看，哈哈
 
+## 都讲了些啥？
+
+1. 使用SBT构建Scala应用
+2. 通过Play构建Web应用
+3. 走进Akka的(并发)世界
+4. 使用Slick进行数据访问
+5. 使用ScalaTest进行单元测试
+6. 使用Scalaz强化函数式编程
+7. pending...
+
 ## 全是markdown文件，怎么看啊？
 
 安装[pandoc](http://johnmacfarlane.net/pandoc/)，然后运行:
