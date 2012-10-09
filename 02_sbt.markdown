@@ -372,8 +372,65 @@ build的定义只要扩展sbt.Build，然后添加相应的逻辑即可，所有
 
 #### SBT项目结构的本质
 
-俄罗斯玩具娃娃
-‘为阐明plugins的配置位置和文件命名惯例做铺垫’
+在了解了.sbt和.scala两种形式的build定义形式之后， 我们就可以来看看SBT项目构建结构的本质了。
+
+首先， 一个SBT项目，与构建相关联的基本设施可以概况为3个部分， 即：
+
+1. 项目的根目录， 比如hello/， 用来界定项目构建的边界；
+2. 项目根目录下的*.sbt文件， 比如hello/build.sbt， 用来指定一般性的build定义；
+3. 项目根目录下的project/*.scala文件， 比如hello/project/Build.scala， 用来指定一些复杂的， *.sbt形式的build定义文件不太好搞的设置；
+
+也就是说， 对于一个SBT项目来说，SBT在构建的时候，只关心两点：
+
+1. build文件的类型（是\*.sbt还是*.scala）；
+2. build文件的存放位置（\*.sbt文件只有存放在项目的根目录下， SBT才会关注它或者它们， 而\*.scala文件只有存放在项目根目录下的project目录下，SBT才不会无视它或者它们）^[实际上，只有那些定义了扩展自sbt.Build类的scala文件，才会被认为是build定义]；
+
+在以上基础规则的约束下，我们来引入一个推导条件， 即：
+
+	项目的根目录下的project/目录，其本身也是一个标准的SBT项目。
+
+在这个条件下，我们再来仔细分析hello/project/目录，看它目录下的各项artifacts到底本质上应该是什么。
+
+我们说项目根目录下的project/子目录下的*.scala文件是当前项目的build定义文件， 而根据以上的推导条件， project/目录本身又是一个SBT项目，我们还知道，SBT下面下的\*.scala都是当前项目的源代码，所以project/下的\*.scala文件， 其实都是project这个目录下的SBT项目的源代码，而这些源代码中，如果有人定义了sbt.Build，那么就会被用作project目录上层目录界定的SBT项目的build定义文件， right？！
+
+那么，来想一个问题，如果project/目录下的*.scala是源代码文件，而project目录整体又是一个标准的SBT项目， 假如我们这些\*.scala源码文件中需要依赖其他三方库，通常我们会怎么做？ 
+
+对， 在当前项目的根目录下新建一个build.sbt文件，将依赖添加进去，所以，我们就有了如下的项目结构：
+
+```
+hello/
+	*.scala
+	build.sbt
+	project/
+		*.scala
+		build.sbt
+```
+
+也就是说，我们可以在书写当前项目的build定义的时候(因为build定义也是用scala来写)，借用第三方依赖来完成某些工作，而不用什么都重新去写，在project/build.sbt下添加项目依赖，那么就可以在project/*.scala里面使用，进而构建出hello/项目的build定义是什么， 即hello/project/这个SBT项目，支撑了上一层hello/这个项目的构建！
+
+现在再来想一下，如果hello/project/这个项目的构建要用到其它SBT特性，比如自定义task或者command啥的，我们该怎么办？！
+
+既然hello/project/也是一个SBT项目，那么按照惯例，我们就可以再其下再新建一个project/目录，在这个下一层的project/目录下再添加\*.scala源文件作为hello/project/这个SBT项目的build定义文件， 整个项目又变成了：
+
+
+```
+hello/
+	*.scala
+	build.sbt
+	project/
+		*.scala
+		build.sbt
+		/project
+			*.scala
+```
+
+而如果hello/project/project/下的源码又要依赖其他三方库那？！ God， 再添加*.sbt或更深一层的project/\*.scala！ 
+
+也就是说， 从第一层的项目根目录开始， 其下project/目录内部再嵌套project/目录，可以无限递归，而且每一层的project/目录都界定了一个SBT项目，而每一个下层的project目录界定的SBT项目其实都是对上一层的SBT项目做支持，作为上一层SBT项目的build定义项目，这就跟俄罗斯娃娃这种玩具似的， 递归嵌套，一层又包一层：
+
+![俄罗斯娃娃玩具](images/matpewka_doll.png)
+
+一般情况下，我们不会搞这么多嵌套，但理解了SBT项目的这个结构上的本质，可以帮助我们更好的理解后面的内容，如果读者看一遍没能理解，那不妨多看几次，多参考其他资料，多揣摩揣摩吧！
 
 ### 	自定义SBT Task
 
