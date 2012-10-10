@@ -522,13 +522,66 @@ object ProjectBuild extends Build {
 怎么样？ 在SBT中自定义task是不是很简单那？！
 
 ### 	SBT Plugins
-通过dist自定义task引出assembly plugin，进而泛化SBT plugin的概念。
 
-#### Why Plugins Help
+每个项目最终都要以相应的形式发布^[这里的发布更多是指特殊的发布形式，比如提供完整的下载包给用户，直接打包成部署包等。一般情况下，如果用Maven或者SBT，可以直接publish到相应的Maven或者Ivy Repository中]，比如二进制包， 源码包，甚至直接可用的部署包等等， 假设我们想把当前的SBT项目打包成可直接解压部署的形式，我们可以使用刚刚介绍的自定义task来完成这一工作:
 
-#### How to write a SBT Plugin
+```scala
+object ProjectBuild extends Build {
 
-#### Useful Available Plugins
+  import Tasks._
+
+  lazy val root = Project(id = "", base = file(".")).settings(Defaults.defaultSettings ++ Seq(distTask, helloTaskSetting): _*)
+
+}
+
+object Tasks {
+
+  val hello = TaskKey[Unit]("hello", "just say hello")
+
+  val helloTaskSetting = hello := {
+    println("hello, sbt~")
+  }
+  
+  val dist = TaskKey[Unit]("dist", "distribute current project as zip or gz packages")
+
+  val distTask = dist <<= (baseDirectory, target, fullClasspath in Compile, packageBin in Compile, resources in Compile, streams) map {
+    (baseDir, targetDir, cp, jar, res, s) =>
+      s.log.info("[dist] prepare distribution folders...")
+      val assemblyDir = targetDir / "dist"
+      val confDir = assemblyDir / "conf"
+      val libDir = assemblyDir / "lib"
+      val binDir = assemblyDir / "bin"
+      Array(assemblyDir, confDir, libDir, binDir).foreach(IO.createDirectory)
+
+      s.log.info("[dist] copy jar artifact to lib...")
+      IO.copyFile(jar, libDir / jar.name)
+
+      s.log.info("[dist] copy 3rd party dependencies to lib...")
+      cp.files.foreach(f => if (f.isFile) IO.copyFile(f, libDir / f.name))
+
+      s.log.info("[dist] copy shell scripts to bin...")
+      ((baseDir / "bin") ** "*.sh").get.foreach(f => IO.copyFile(f, binDir / f.name))
+
+      s.log.info("[dist] copy configuration templates to conf...")
+      ((baseDir / "conf") * "*.xml").get.foreach(f => IO.copyFile(f, confDir / f.name))
+
+      s.log.info("[dist] copy examples chanenl deployment...")
+      IO.copyDirectory(baseDir / "examples", assemblyDir / "examples")
+
+      res.filter(_.name.startsWith("logback")).foreach(f => IO.copyFile(f, assemblyDir / f.name))
+  }
+}
+```
+
+这种方式好是好，可就是不够通用，你我应该都不想每个项目里的Build文件里都拷贝粘帖一把这些代码吧？！ 况且， 哪些artifacts要打包进去，打包之前哪些参数可以调整，以这种形式来看，都不方便调整(如果你不烦每次都添加修改代码的话)， 那SBT有没有更好的方式来支持类似的需求那？！ 当然有咯， SBT的Plugins机制就是为此而生的！
+
+#### SBT Plugin简介
+
+
+
+#### 想写个自己的SBT Plugin该咋整？！
+
+#### 有没有现成货可以用的？！
 
 
 ### 	多模块工程管理(Multi-Module Project)
