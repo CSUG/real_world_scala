@@ -577,11 +577,60 @@ object Tasks {
 
 #### SBT Plugin简介
 
+SBT Plugin机制允许我们扩展SBT项目的build定义， 这里的扩展基本可以理解为允许我们向项目的build定义里添加各种所需的Settings， 比如自定义Task，瞅一眼Plugin的代码就更明了了：
 
+```scala
+trait Plugin {
+  def settings: Seq[Setting[_]] = Nil
+}
+```
+
+我们知道如果项目位于hello目录下的话， 该项目的build定义可以位于`hello/\*.sbt`或者`hello/project/*.scala`两种位置，既然Plugin是对build定义的扩展，那么， 我们就可以认为项目的build定义依赖这些plugin的某些状态或者行为，即plugin属于项目build定义的某种依赖，从这个层次来看，plugin的配置和使用跟library dependency的配置和使用是一样的(具体有稍微的差异)。不过，既然plugin是对build定义的扩展（及被依赖），那么，我们应该在build定义对应的SBT项目的build定义中配置它(听起来是不是有些绕？ 如果读者感觉绕，看不明白的话，不妨回头看看"SBT项目结构的本质"一节的内容)，即`hello/project/\*.sbt`或者`hello/project/project/\*.scala`, 大多数情况下，我们会直接在像`hello/project/plugins.sbt`^[plugins.sbt的名称只是便于识别，实际上，SBT只关注.sbt的后缀，具体名称是不关心的，因为plugins.sbt本质上也是一个SBT项目的build定义文件，除了在其中配置Plugin，我们同样可以添加第三方依赖， 追加其他Setting等，跟一般的.sbt配置文件无异]配置文件中配置和添加Plugin：
+
+```scala
+resolvers += Resolver.url("git://github.com/jrudolph/sbt-dependency-graph.git")
+
+resolvers += "sbt-idea-repo" at "http://mpeltonen.github.com/maven/"
+
+addSbtPlugin("com.github.mpeltonen" % "sbt-idea" % "1.1.0")
+
+addSbtPlugin("net.virtual-void" % "sbt-dependency-graph" % "0.6.0")
+```
+
+因为Plugin实现一般也都是以三方包的形式发布的，`addSbtPlugin`所做的事情实际上就是根据Plugin发布时使用的artifactId等标志性信息^[在SBT中，使用ModuleID来抽象和标志相应三方库的标志]，将它们转换成Setting添加到当前项目build定义中。
+
+如果Plugin是发布到SBT默认会查找的Maven或者Ivy Repository中，则只需要`addSbtPlugin`就行了， 否则， 需要将Plugin发布到的Repository添加到resolvers以便SBT可以发现并加载成功。
+
+#### 有哪些现成的Plugin可以用吗？
+
+在前面的配置实例中，我们已经看到两个笔者常用的Plugin:
+
+1. [sbt-idea](https://github.com/mpeltonen/sbt-idea)
+	- 笔者使用IntelliJ IDEA来开发scala应用， sbt-idea这个插件可以帮助我从SBT的配置中生成IDEA这个IDE对应的classpath，项目信息等元数据， 这样，我只要运行`sbt gen-idea`这一命令之后，就可以在IDEA中直接打开当前的SBT项目了。如果读者使用其他的IDEA，那也可以使用类似的插件，比如[sbteclipse](https://github.com/typesafehub/sbteclipse)或者[sbt-netbeans-plugin](https://github.com/remeniuk/sbt-netbeans-plugin)。
+2. [sbt-dependency-graph](https://github.com/jrudolph/sbt-dependency-graph)
+	- 项目的依赖越多， 依赖关系就越复杂， 这个插件可以帮助我们理清楚项目各个依赖之间的关系，完成跟Maven的dependency:tree类似的功能
+	
+除了这些， 读者还可以在SBT的[Plugins List](https://github.com/harrah/xsbt/wiki/sbt-0.10-plugins-list)中找到更多有用的Plugin，比如：
+
+1. [xsbt-web-plugin](https://github.com/siasia/xsbt-web-plugin)
+	- 看名字就能猜到是干啥的了
+2. [sbt-assembly](https://github.com/sbt/sbt-assembly)
+	- 可以将当前项目的二进制包以及依赖的所有第三方库都打包成一个jar包发布，即one-jar， 对于那种直接运行的应用程序很方便
+3. [sbt-aether-deploy](https://github.com/arktekk/sbt-aether-deploy)
+	- 使用aether来部署当前项目， aethor是Maven中管理Repository的API，现在单独剥离出来更通用了
+4. [sbt-dirty-money](https://github.com/sbt/sbt-dirty-money)
+	- SBT会将项目的依赖抓取到本地的ivy cache中缓存起来，避免频繁的update对带宽造成的浪费，但有些时候需要对缓存里失效的内容进行清理，使用这个插件可以避免自己手动遍历目录逐一删除相应的artifacts	
+关于现成可用的Plugin就介绍这些，更多的好东西还是有待读者自己去发掘吧！
+
+	TIPS
+	
+	如果某些SBT Plugin个人经常用到，那么，可以将这些Plugin配置为Global plugin， 即在用户的home目录下的".sbt/plugins/"目录下新建一个plugins.sbt文件（名称无所谓，类型有所谓，你懂的哦），然后将这些常用的插件配置进去，之后，在任何的SBT项目下，就都可以使用这些插件了，“配置一次，到处运行”！
+	
+	不过， 笔者建议， 跟项目相关的SBT Plugin还是应该配置到当前项目中，这样，走版本控制，别人都可统一使用这些Plugin，只有哪些自己常用，而与具体项目绑定关系不是很强的Plugin才配置为global的plugin， 道理跟git和svn处理ignore的做法差异是类似的！
 
 #### 想写个自己的SBT Plugin该咋整？！
 
-#### 有没有现成货可以用的？！
+
 
 
 ### 	多模块工程管理(Multi-Module Project)
