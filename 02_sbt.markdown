@@ -630,8 +630,83 @@ addSbtPlugin("net.virtual-void" % "sbt-dependency-graph" % "0.6.0")
 
 #### 想写个自己的SBT Plugin该咋整？！
 
+编写一个自己的SBT Plugin其实并不复杂，一个SBT Plugin工程跟一般的SBT项目并无质上的差异，唯一的差别就在于我们需要在SBT Plugin项目的build定义中指定一项Setting用来表明当前项目是一个SBT Plugin项目，而不是一个一般的SBT项目，这项Setting即：
 
+```scala
+sbtPlugin := true
+```
 
+有了这项Setting， SBT在编译和发布当前这个Plugin项目的时候就会做两个事情：
+
+1. 将SBT API加入当前项目的classpath中（这样我们就可以在编写Plugin的时候使用到SBT的API）；
+2. 在发布(publish-local, publish)当前项目的时候，SBT会搜寻sbt.Plugin的实现，然后将这些实现添加到sbt/sbt.plugins这个文件中，并将这个文件与当前Plugin项目的其它artifacts一起打包到jar中发布；
+
+Plugin项目发布之后，就可以在其他项目中引用它们，怎么用，前面详细介绍过了，这里不再赘述。
+
+有了编写SBT Plugin理论指导，我们就可以着手实践了， 我们先把hello这个自定义task转换为Plugin实现如下：
+
+```scala
+// HelloSBT.scala
+
+import sbt._
+
+object HelloSBT extends Plugin {
+  val helloSbt = TaskKey[Unit]("hello-sbt", "just say hello")
+
+  val helloSbtSetting = helloSbt := {
+    println("hello, sbt~")
+  }
+}
+```
+
+然后，我们为其配置build定义：
+
+```scala
+// ${project.root}/build.sbt
+
+name := "hello_sbt_plugin"
+
+organization := "com.github.fujohnwang"
+
+version := "0.0.1"
+
+sbtPlugin := true
+
+scalaVersion := "2.9.2"
+
+```
+
+编译并发布到本地的ivy库中（测试无误后，可以直接发布到其他共享范围更大的repo中），执行：
+
+```scala
+sbt publish-local
+```
+
+之后，我们就可以在其他SBT项目的build定义中使用到这个SBT Plugin了，比如我们将其添加到某个SBT项目的${project.root}/project/plugins.sbt（名称不重要，还记得吧？ 注意路径）：
+
+```scala
+addSbtPlugin("com.github.fujohnwang" % "hello_sbt_plugin" % "0.0.1")
+```
+
+并且将__helloSbtSetting__手动配置到${project.root}/build.sbt中：
+
+```scala
+HelloSBT.helloSbtSetting
+```
+
+好啦，现在算是万事大吉了，在当前SBT项目直接运行`sbt hello-sbt`试试吧！
+
+理论和实践我们都阐明了，现在该说一下在编写SBT Plugin的时候应该注意的一些事情了。
+
+首先，回头查看HelloSBT的代码实现，读者应该发现，我们将SettingKey的名称和变量名都做了改变，这是因为我们在编写Plugin的时候，要尽量避免命名冲突，所以，通过引入当前Plugin的名称前缀来达到这一目的；
+
+其次，我们没有将helloSbtSetting加入到`Plugin.settings`（这里同样注意添加了前缀的命名方式），这就意味着，我们在使用这一Plugin的时候，要手动将这一Setting加到目标项目的build定义中才能使用到它，原因在于，虽然我们可以override并将helloSbtSetting加入`Plugin.settings`，这样可以让SBT自动加载到当前项目，但一般情况下我们不会这样做，因为在多模块的项目中，这一setting也会自动加载到所有项目上，除非是command类型的Plugin，否则，这种行为是不合适的， 故此，大部分Plugin实现都是提供自己的Setting，并让用户决定是否加载使用；
+
+其实，编写一个SBT Plugin还要注意很多东西，但这里就不一一列举了，大家可以参考[Best Practices](http://www.scala-sbt.org/release/docs/Detailed-Topics/Best-Practices.html)和[Plugins Best Practices](http://www.scala-sbt.org/release/docs/Extending/Plugins-Best-Practices.html)这两份SBT Wiki文档，里面详细说明了编写SBT Plugin的一些最佳实践，不过，作为结束，我补充最基本的一点， 即"不要硬编码Plugin实现的任何配置"! 读者可以尝试将dist自定义task转换成一个SBT Plugin，在转换过程中，不妨为"dist"啦， "conf"啦， "bin"啦这些目标目录设立相应的SettingKey并给予默认值，这样就不会像我们的自定义task里似的，直接硬编码这些目录名称了，而且，插件的使用者也可以在使用插件的项目中通过override相应的Plugin的这些SettingKey标志的Setting来提供自定义的值， 怎么样? 动手尝试一把？！
+
+	NOTE
+	
+	要编写一个SBT Plugin还需要修炼一下SBT的内功，包括搞清楚SBT的Setting系统，Configuration，Command等深层次概念， 这样，在编写SBT Plugin的时候才不会感觉“局促”，^_^
 
 ### 	多模块工程管理(Multi-Module Project)
 
