@@ -710,9 +710,67 @@ HelloSBT.helloSbtSetting
 
 ### 	多模块工程管理(Multi-Module Project)
 
+对于Maven用户来说， 多模块的工程管理早就不是什么神秘的特性了吧？！ 但笔者实际上对于这种工程实践却一直持保留意见，因为很多时候，架构项目结构的人并没有很好的理解项目中各种实体的粒度与边界之间的合理关系， 很多明明在package层次/粒度可以搞定的事情也往往被纳入到了子工程的粒度中去，这种不合适的粒度和边界选择，一方面反映了最初规划项目结构的人对自身项目的理解不足，另一方面也会为后继的开发和维护人员带来些许的繁琐。所以很多时候，如果某些关注点足以设立一个项目来管理，那我宁愿直接为其设立独立的项目结构，然后让需要依赖的项目依赖它即可以了（大部分时候，我们要解决的就是各个项目之间的依赖关系，不是吗？），当然， 这种做法并非绝对，只是更多的在强调粒度和边界选择的合理性上。
 
+扯多了，现在让我们来看看在SBT中我们是如何来规划和组织多模块的项目结构的吧！
 
+包含多个子模块或者子项目的SBT项目跟一个标准的独立的SBT项目相差不多，唯一的差别在于：
 
+1. build定义中多了对多个子模块/工程的关系的描述；
+2. 项目的根目录下多了多个子模块/工程相应的目录；
+
+下面是一个多模块工程的典型结构：
+
+```
+${project.root}
+	- build.sbt
+	+ src/main/scala
+	+ project
+		- Build.scala
+	+ module1
+		- build.sbt
+		+ src/main/scala
+	+ module2
+		- build.sbt
+		+ src/main/scala
+	+ module3
+		- build.sbt
+		+ src/main/scala
+```
+
+我们可以发现，除了多了各个子模块/工程相应的目录，其它方面跟一个标准独立的SBT项目无异， 这些子模块/工程与当前项目或者其它子模块/工程之间的关系由当前项目的build定义来“说明”， 当然这种关系的描述是如此的“纠缠”，只能在\*.scala形式的build定义中声明， 例如在${project.root}/project/Build.scala)中我们可以简单的定义多个子模块/工程之间的关系如下：
+
+```scala
+import sbt._
+import Keys._
+
+object MultipleModuleProjectBuild extends Build {
+	lazy val root = Project(id = "root",
+                            base = file(".")) aggregate(sub1, sub2)
+	lazy val sub1 = Project(id = "m1",
+                            base = file("module1"))
+	lazy val sub2 = Project(id = "m2",
+                            base = file("module2")) dependsOn(sub3) 
+	lazy val sub3 = Project(id = "m3",
+                            base = file("module3")) 
+}
+```
+
+在当前项目的build定义中，我们声明了多个Project实例来对应相应的子项目，并通过Porject的aggregate和dependsOn来进一步申明各个项目之间的关系。 aggregate指明的是一种并行的相互独立的行为，只是这种行为是随父项目执行相应动作而触发的， 比如，在父项目中执行compile，则会同时触发module1和module2两个子模块的编译，只不过，两个子模块之间的执行顺序等行为并无联系； 而dependsOn则说明一种强依赖关系， 像module2这个子项目，因为它依赖module3，所以，编译module2子模块/项目的话，会首先编译module3，然后才是module2，当然，在module3的相应artifact也会加入到module2的classpath中。
+
+我们既然已经了解了如何在父项目中定义各个子模块/项目之间的关系，下面我们来看一下各个子模块/项目内部的细节吧！ 简单来讲， 每个子模块/项目也可以看作一个标准的SBT项目，但一个很明显的差异在于： __每个子模块/项目下不可以再创建project目录下其下相应的\*.scala定义文件（实际上可以创建，但会被SBT忽略）__。不过， 子模块/项目自己下面还是可以使用.sbt形式的build定义的，在各自的.sbt build定义文件中可以指定各个子模块/项目各自的Setting或者依赖，比如version和LibrarayDependencies等。
+
+一般情况下， SBT下的多模块/工程的组织结构就是如此，即由父项目来规划组织结构和关系，而由各个子模块/项目自治的管理各自的设置和依赖。但这也仅仅是倡导，如果读者愿意，完全可以在父项目的Build定义中添加任何自己想添加的东西，比如将各个子模块/项目的Settings直接挪到父项目的.scala形式的build定义中去（只不过，可能会让这个.scala形式的build定义看起来有些臃肿或者复杂罢了）， 怎么做？ 自己查sbt.Project的scaladoc文档去 ：）
+
+总的来说，多子模块/工程的项目组织主体上还是以父项目为主体，各个子模块/项目虽然有一定的“经济”独立性，但并非完全自治， 貌似跟未成年人在各自家庭里的地位是相似吧？！ 哈～
+
+	TIPS
+	
+	在Maven的多子模块/项目的组织结构中，我们很喜欢将所有项目可以重用或者共享的一些设定或者依赖放到父项目的build定义中，在SBT中也是可以的，只要在父项目的.sbt或者.scala形式的build定义中添加即可，不过，要将这些共享的设定的scope设定为ThisBuild， 例如：
+	
+		scalaVersion in ThisBuild := "2.9.2"
+	
+	这样，就不用在每一个项目/模块的build定义中逐一声明要使用的scala版本了。其它的共享设定可以依法炮制哦～
 
 ## SBT扩展篇 - 使用SBT创建可自动补全的命令行应用程序
 
