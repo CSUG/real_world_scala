@@ -18,6 +18,10 @@ _by fujohnwang_
 
 ## 全是markdown文件，怎么看啊？
 
+### 如果你不愿意折腾
+直接查看本地生成的html文件: __real_world_scala.html__
+
+### 如果你愿意折腾
 安装[pandoc](http://johnmacfarlane.net/pandoc/)，然后运行:
 
 ```
@@ -25,6 +29,5 @@ $ pandoc -s -N --toc -c css/default.css *.markdown > real_world_scala.html
 ```
 
 css可以根据自己的胃口调和， 输出的文件名也不用非得叫real_world_scala.html，自己喜欢输出成什么文件名就叫什么文件名， 点开你的输出文件就可以看了， easy as ABC~
-
 
 
