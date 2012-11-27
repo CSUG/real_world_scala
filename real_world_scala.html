@@ -1,0 +1,827 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+  <meta http-equiv="Content-Style-Type" content="text/css" />
+  <meta name="generator" content="pandoc" />
+  <meta name="author" content="王福强 - September 1, 2012" />
+  <title>Real World Scala</title>
+  <style type="text/css">
+table.sourceCode, tr.sourceCode, td.lineNumbers, td.sourceCode {
+  margin: 0; padding: 0; vertical-align: baseline; border: none; }
+table.sourceCode { width: 100%; }
+td.lineNumbers { text-align: right; padding-right: 4px; padding-left: 4px; color: #aaaaaa; border-right: 1px solid #aaaaaa; }
+td.sourceCode { padding-left: 5px; }
+code > span.kw { color: #007020; font-weight: bold; }
+code > span.dt { color: #902000; }
+code > span.dv { color: #40a070; }
+code > span.bn { color: #40a070; }
+code > span.fl { color: #40a070; }
+code > span.ch { color: #4070a0; }
+code > span.st { color: #4070a0; }
+code > span.co { color: #60a0b0; font-style: italic; }
+code > span.ot { color: #007020; }
+code > span.al { color: #ff0000; font-weight: bold; }
+code > span.fu { color: #06287e; }
+code > span.er { color: #ff0000; font-weight: bold; }
+  </style>
+  <link rel="stylesheet" href="css/default.css" type="text/css" />
+</head>
+<body>
+<div id="header">
+<h1 class="title"><strong>Real World Scala</strong></h1>
+<h2 class="author"><em>王福强</em> - <em>September 1, 2012</em></h2>
+</div>
+<div id="TOC">
+<ul>
+<li><a href="#序言"><span class="toc-section-number">1</span> 序言</a></li>
+<li><a href="#使用sbt构建scala应用"><span class="toc-section-number">2</span> 使用SBT构建Scala应用</a><ul>
+<li><a href="#sbt简介"><span class="toc-section-number">2.1</span> SBT简介</a></li>
+<li><a href="#sbt安装和配置"><span class="toc-section-number">2.2</span> SBT安装和配置</a><ul>
+<li><a href="#所有平台通用的安装配置方式"><span class="toc-section-number">2.2.1</span> 所有平台通用的安装配置方式</a></li>
+<li><a href="#平台相关的安装配置方式"><span class="toc-section-number">2.2.2</span> 平台相关的安装配置方式</a></li>
+</ul></li>
+<li><a href="#sbt基础篇"><span class="toc-section-number">2.3</span> SBT基础篇</a><ul>
+<li><a href="#hello-sbt"><span class="toc-section-number">2.3.1</span> Hello, SBT</a></li>
+<li><a href="#sbt项目工程结构详解"><span class="toc-section-number">2.3.2</span> SBT项目工程结构详解</a><ul>
+<li><a href="#src目录详解"><span class="toc-section-number">2.3.2.1</span> src目录详解</a></li>
+<li><a href="#build.sbt详解"><span class="toc-section-number">2.3.2.2</span> build.sbt详解</a></li>
+<li><a href="#project目录即相关文件介绍"><span class="toc-section-number">2.3.2.3</span> project目录即相关文件介绍</a></li>
+<li><a href="#其它"><span class="toc-section-number">2.3.2.4</span> 其它</a></li>
+</ul></li>
+<li><a href="#sbt的使用"><span class="toc-section-number">2.3.3</span> SBT的使用</a></li>
+<li><a href="#sbt的依赖管理"><span class="toc-section-number">2.3.4</span> SBT的依赖管理</a><ul>
+<li><a href="#unmanaged-dependencies简介"><span class="toc-section-number">2.3.4.1</span> Unmanaged Dependencies简介</a></li>
+<li><a href="#managed-dependencies详解"><span class="toc-section-number">2.3.4.2</span> Managed Dependencies详解</a></li>
+<li><a href="#resovers简介"><span class="toc-section-number">2.3.4.3</span> Resovers简介</a></li>
+</ul></li>
+</ul></li>
+<li><a href="#sbt进阶篇"><span class="toc-section-number">2.4</span> SBT进阶篇</a><ul>
+<li><a href="#scala形式的build定义"><span class="toc-section-number">2.4.1</span> .scala形式的build定义</a><ul>
+<li><a href="#sbt项目结构的本质"><span class="toc-section-number">2.4.1.1</span> SBT项目结构的本质</a></li>
+</ul></li>
+<li><a href="#自定义sbt-task"><span class="toc-section-number">2.4.2</span> 自定义SBT Task</a><ul>
+<li><a href="#定义task"><span class="toc-section-number">2.4.2.1</span> 定义task</a></li>
+<li><a href="#将task添加到项目的settings当中"><span class="toc-section-number">2.4.2.2</span> 将task添加到项目的settings当中</a></li>
+<li><a href="#测试和运行定义的task"><span class="toc-section-number">2.4.2.3</span> 测试和运行定义的task</a></li>
+</ul></li>
+<li><a href="#sbt-plugins"><span class="toc-section-number">2.4.3</span> SBT Plugins</a><ul>
+<li><a href="#sbt-plugin简介"><span class="toc-section-number">2.4.3.1</span> SBT Plugin简介</a></li>
+<li><a href="#有哪些现成的plugin可以用吗"><span class="toc-section-number">2.4.3.2</span> 有哪些现成的Plugin可以用吗？</a></li>
+<li><a href="#想写个自己的sbt-plugin该咋整"><span class="toc-section-number">2.4.3.3</span> 想写个自己的SBT Plugin该咋整？！</a></li>
+</ul></li>
+<li><a href="#多模块工程管理multi-module-project"><span class="toc-section-number">2.4.4</span> 多模块工程管理(Multi-Module Project)</a></li>
+</ul></li>
+<li><a href="#sbt扩展篇---使用sbt创建可自动补全的命令行应用程序"><span class="toc-section-number">2.5</span> SBT扩展篇 - 使用SBT创建可自动补全的命令行应用程序</a></li>
+</ul></li>
+<li><a href="#通过play构建web应用"><span class="toc-section-number">3</span> 通过Play构建Web应用</a><ul>
+<li><a href="#play框架简介"><span class="toc-section-number">3.1</span> Play框架简介</a></li>
+<li><a href="#play的安装与配置"><span class="toc-section-number">3.2</span> Play的安装与配置</a></li>
+<li><a href="#开始play"><span class="toc-section-number">3.3</span> 开始Play</a></li>
+<li><a href="#play基础篇"><span class="toc-section-number">3.4</span> Play基础篇</a><ul>
+<li><a href="#action"><span class="toc-section-number">3.4.1</span> Action</a></li>
+<li><a href="#result"><span class="toc-section-number">3.4.2</span> Result</a></li>
+<li><a href="#routes"><span class="toc-section-number">3.4.3</span> Routes</a></li>
+<li><a href="#session-and-flash"><span class="toc-section-number">3.4.4</span> Session And Flash</a></li>
+<li><a href="#模版引擎与模版"><span class="toc-section-number">3.4.5</span> 模版引擎与模版</a></li>
+</ul></li>
+<li><a href="#play进阶篇"><span class="toc-section-number">3.5</span> Play进阶篇</a><ul>
+<li><a href="#play中的异步化http编程async-http-programming-in-play"><span class="toc-section-number">3.5.1</span> Play中的异步化HTTP编程(Async HTTP Programming in Play)</a></li>
+<li><a href="#streaming-http-programming"><span class="toc-section-number">3.5.2</span> Streaming HTTP Programming</a></li>
+</ul></li>
+<li><a href="#问题"><span class="toc-section-number">3.6</span> 问题</a></li>
+<li><a href="#play扩展篇"><span class="toc-section-number">3.7</span> Play扩展篇</a></li>
+</ul></li>
+<li><a href="#走进akka的并发世界"><span class="toc-section-number">4</span> 走进Akka的(并发)世界</a><ul>
+<li><a href="#akka框架简介"><span class="toc-section-number">4.1</span> Akka框架简介</a></li>
+<li><a href="#akka的安装与配置"><span class="toc-section-number">4.2</span> Akka的安装与配置</a></li>
+<li><a href="#helloakka"><span class="toc-section-number">4.3</span> Hello，Akka</a></li>
+<li><a href="#akka进阶"><span class="toc-section-number">4.4</span> Akka进阶</a></li>
+<li><a href="#akka扩展篇---使用akka构建实时流计算框架"><span class="toc-section-number">4.5</span> Akka扩展篇 - 使用Akka构建实时流计算框架</a></li>
+</ul></li>
+<li><a href="#使用slick进行数据访问"><span class="toc-section-number">5</span> 使用Slick进行数据访问</a><ul>
+<li><a href="#references"><span class="toc-section-number">5.1</span> References</a></li>
+</ul></li>
+<li><a href="#使用scalaz强化函数式编程"><span class="toc-section-number">6</span> 使用Scalaz强化函数式编程</a></li>
+<li><a href="#参考资料"><span class="toc-section-number">7</span> 参考资料</a></li>
+</ul>
+</div>
+<h1 id="序言"><a href="#TOC"><span class="header-section-number">1</span> 序言</a></h1>
+<p>Scala已经被Twitter, Linkedin, Juniper等公司所接受并且大规模实施，甚至于近期Intel也声明将在Scala的基础上构建他们新一代的分布式平台并邀请Scala之父Martin Odersky博士参加BASE大会介绍有关Scala2.10的新特性。</p>
+<h1 id="使用sbt构建scala应用"><a href="#TOC"><span class="header-section-number">2</span> 使用SBT构建Scala应用</a></h1>
+<h2 id="sbt简介"><a href="#TOC"><span class="header-section-number">2.1</span> SBT简介</a></h2>
+<p>SBT是Simple Build Tool的简称，如果读者使用过Maven，那么可以简单将SBT看做是Scala世界的Maven，虽然二者各有优劣，但完成的工作基本是类似的。</p>
+<p>虽然Maven同样可以管理Scala项目的依赖并进行构建， 但SBT的某些特性却让人如此着迷，比如：</p>
+<ul>
+<li>使用Scala作为DSL来定义build文件（one language rules them all）;</li>
+<li>通过触发执行(trigger execution)特性支持持续的编译与测试；</li>
+<li>增量编译；<sup><a href="#fn1" class="footnoteRef" id="fnref1">1</a></sup></li>
+<li>可以混合构建Java和Scala项目；</li>
+<li>并行的任务执行；</li>
+<li>可以重用Maven或者ivy的repository进行依赖管理；</li>
+</ul>
+<p>等等这些，都是SBT得以在Scala的世界里广受欢迎的印记。</p>
+<p>SBT的发展可以分为两个阶段， 即SBT_0.7.x时代以及SBT_0.10.x以后的时代。</p>
+<p>目前来讲， SBT_0.7.x已经很少使用， 大部分公司和项目都已经迁移到0.10.x以后的版本上来，最新的是0.12版本。 0.10.x之后的版本build定义采用了新的Settings系统，与最初0.7.x版本采用纯Scala代码来定义build文件大相径庭，虽然笔者在迁移之前很抵触（因为0.7.x中采用Scala定义build文件的做法可以体现很好的统一性），但还是升级并接纳了0.10.x以后的版本，并且也逐渐意识到， 虽然新的版本初看起来很复杂，但一旦了解了其设计和实现的哲学跟思路，就会明白这种设计可以更便捷的定义build文件。而且可选的build文件方式也同样运行采用Scala代码来定义，即并未放弃统一性的思想。</p>
+<p>以上是SBT的简单介绍，如果读者已经急于开始我们的SBT之旅，那么让我们先从SBT的安装和配置开始吧！</p>
+<h2 id="sbt安装和配置"><a href="#TOC"><span class="header-section-number">2.2</span> SBT安装和配置</a></h2>
+<p>SBT的安装和配置可以采用两种方式，一种是所有平台都通用的安装配置方式，另一种是跟平台相关的安装和配置方式，下面我们分别对两种方式进行详细介绍。</p>
+<h3 id="所有平台通用的安装配置方式"><a href="#TOC"><span class="header-section-number">2.2.1</span> 所有平台通用的安装配置方式</a></h3>
+<p>所有平台通用的安装和配置方式只需要两步：</p>
+<ol style="list-style-type: decimal">
+<li>下载sbt boot launcher
+<ul>
+<li>本书采用最新的sbt0.12，其下载地址为<a href="http://typesafe.artifactoryonline.com/typesafe/ivy-releases/org.scala-sbt/sbt-launch/0.12.0/sbt-launch.jar"><code class="url">http://typesafe.artifactoryonline.com/typesafe/ivy-releases/org.scala-sbt/sbt-launch/0.12.0/sbt-launch.jar</code></a>；<br /></li>
+</ul></li>
+<li>创建sbt启动脚本（启动脚本是平台相关的）
+<ul>
+<li>如果是Linux/Unit系统，创建名称为sbt的脚本，并赋予其执行权限，并将其加到PATH路径中； sbt脚本内容类似于 <code>java -Xms512M -Xmx1536M -Xss1M -XX:+CMSClassUnloadingEnabled -XX:MaxPermSize=384M -jar `dirname $0`/sbt-launch.jar &quot;$@&quot;</code>， 可以根据情况调整合适的java进程启动参数；</li>
+<li>如果是Windows系统，则创建sbt.bat命令行脚本，同样将其添加到PATH路径中。 脚本内容类似于<code>set SCRIPT_DIR=%~dp0 \n java -Xmx512M -jar &quot;%SCRIPT_DIR%sbt-launch.jar&quot; %*</code></li>
+</ul></li>
+</ol>
+<p>以上两步即可完成sbt的安装和配置。</p>
+<h3 id="平台相关的安装配置方式"><a href="#TOC"><span class="header-section-number">2.2.2</span> 平台相关的安装配置方式</a></h3>
+<p>笔者使用的是Mac系统，安装sbt只需要执行<code>brew install sbt</code>即可（因为我已经安装有homebrew这个包管理器），使用macport同样可以很简单的安装sbt - <code>sudo port install sbt</code>;</p>
+<p>如果读者使用的是Linux系统，那么这些系统通常都会有相应的包管理器可用，比如yum或者apt，安装和配置sbt也同样轻松，只要简单的运行<code>yum install sbt</code> 或者 <code>apt-get install sbt</code>命令就能搞定(当然，通常需要先将有sbt的repository添加到包管理器的列表中)；</p>
+<p>Windows的用户也可以偷懒，只要下载MSI文件直接安装，MSI文件下载地址为<a href="http://scalasbt.artifactoryonline.com/scalasbt/sbt-native-packages/org/scala-sbt/sbt/0.12.0/sbt.msi"><code class="url">http://scalasbt.artifactoryonline.com/scalasbt/sbt-native-packages/org/scala-sbt/sbt/0.12.0/sbt.msi</code></a>。</p>
+<p>以上方式基本上囊括三大主流操作系统特定的安装和配置方式，其它特殊情况读者可以酌情处理 <sup>_</sup></p>
+<h2 id="sbt基础篇"><a href="#TOC"><span class="header-section-number">2.3</span> SBT基础篇</a></h2>
+<p>既然我们已经安装和配置好了SBT，那就让我们先尝试构建一个简单的Scala项目吧！</p>
+<h3 id="hello-sbt"><a href="#TOC"><span class="header-section-number">2.3.1</span> Hello, SBT</a></h3>
+<p>在SBT的眼里， 一个最简单的Scala项目可以极简到项目目录下只有一个.scala文件，比如HelloWorld.scala:</p>
+<pre class="sourceCode scala"><code class="sourceCode scala"><span class="kw">object</span> HelloWorld{
+  <span class="kw">def</span> <span class="fu">main</span>(args: Array[String]) {
+    <span class="fu">println</span>(<span class="st">&quot;Hello, SBT&quot;</span>)
+  }
+}</code></pre>
+假设我们HelloWorld.scala放到hello目录下，那么可以尝试在该目录下执行：
+<pre>
+$ sbt   
+> run  
+[info] Running HelloWorld   
+Hello, SBT   
+[success] Total time: 2 s, completed Sep 2, 2012 7:54:58 PM
+</pre>
+<p>怎么样，是不是很简单那？ （画外音： 这岂止是简单，简直就是个玩具嘛，有啥用嘛？！ 来点儿实在的行不？）</p>
+<p>好吧， 笔者也承认这太小儿科了，所以，我们还是来点儿&quot;干货&quot;吧！</p>
+<blockquote>
+<p>NOTE: 以上实例简单归简单，但可不要小看它哦，你可知道笔者开始就因为忽略了如此简单的小细节而&quot;光阴虚度&quot;？ 该实例的项目目录下，没有定义任何的build文件，却依然可以正确的执行sbt命令， 实际上， 即使在一个空目录下执行sbt命令也是可以成功进入sbt的console的。 所以，只要了解了sbt构建的这个最低条件，那么，当你无意间在非项目的根目录下执行了相应sbt命令而出错的时候，除了检查build文件的定义，另外要注意的就是，你是否在预想的项目根目录下面执行的sbt命令！</p>
+</blockquote>
+<h3 id="sbt项目工程结构详解"><a href="#TOC"><span class="header-section-number">2.3.2</span> SBT项目工程结构详解</a></h3>
+<p>一般意义上讲，SBT工程项目的目录结构跟Maven的很像， 如果读者接触过Maven，那么可以很容易的理解如下内容。</p>
+<p>一个典型的SBT项目工程结构如下图所示：</p>
+<div class="figure">
+<img src="images/sbt_project_structure.png" alt="SBT项目工程结构图" /><p class="caption">SBT项目工程结构图</p>
+</div>
+<h4 id="src目录详解"><a href="#TOC"><span class="header-section-number">2.3.2.1</span> src目录详解</a></h4>
+<p>Maven用户对src目录的结构应该不会感到陌生，下面简单介绍各个子目录的作用。</p>
+<ul>
+<li>src/main/java目录存放Java源代码文件</li>
+<li>src/main/resources目录存放相应的资源文件</li>
+<li>src/main/scala目录存放Scala源代码文件</li>
+<li>src/test/java目录存放Java语言书写的测试代码文件</li>
+<li>src/test/resources目录存放测试起见使用到的资源文件</li>
+<li>src/test/scala目录存放scala语言书写的测试代码文件</li>
+</ul>
+<h4 id="build.sbt详解"><a href="#TOC"><span class="header-section-number">2.3.2.2</span> build.sbt详解</a></h4>
+<p>读者可以简单的将build.sbt文件理解为Maven项目的pom.xml文件，它是build定义文件。 SBT运行使用两种形式的build定义文件，一种就是放在项目的根目录下，即build.sbt， 是一种简化形式的build定义； 另一种放在project目录下，采用纯Scala语言编写，形式更加复杂，当然，也更完备，更有表现力。</p>
+<p>我们暂时先介绍build.sbt的定义格式，基于scala的build定义格式我们稍后再细说。</p>
+<p>一个简单的build.sbt文件内容如下：</p>
+<pre class="sourceCode scala"><code class="sourceCode scala">name := <span class="st">&quot;hello&quot;</span>      <span class="co">// 项目名称</span>
+
+organization := <span class="st">&quot;xxx.xxx.xxx&quot;</span>  <span class="co">// 组织名称</span>
+
+version := <span class="st">&quot;0.0.1-SNAPSHOT&quot;</span>  <span class="co">// 版本号</span>
+
+scalaVersion := <span class="st">&quot;2.9.2&quot;</span>   <span class="co">// 使用的Scala版本号</span>
+
+
+<span class="co">// 其它build定义</span></code></pre>
+<p>其中， name和version的定义是必须的，因为如果想生成jar包的话，这两个属性的值将作为jar包名称的一部分。</p>
+<p>build.sbt的内容其实很好理解，可以简单理解为一行代表一个键值对(Key-Value Pair)，各行之间以空行相分割。</p>
+<p>当然，实际情况要比这复杂，需要理解SBT的Settings引擎才可以完全领会， 以上原则只是为了便于读者理解build.sbt的内容。</p>
+<p>除了定义以上项目相关信息，我们还可以在build.sbt中添加项目依赖：</p>
+<pre class="sourceCode scala"><code class="sourceCode scala"><span class="co">// 添加源代码编译或者运行期间使用的依赖</span>
+libraryDependencies += <span class="st">&quot;ch.qos.logback&quot;</span> % <span class="st">&quot;logback-core&quot;</span> % <span class="st">&quot;1.0.0&quot;</span>
+
+libraryDependencies += <span class="st">&quot;ch.qos.logback&quot;</span> % <span class="st">&quot;logback-classic&quot;</span> % <span class="st">&quot;1.0.0&quot;</span>
+
+<span class="co">// 或者</span>
+
+libraryDependencies ++= Seq(
+                            <span class="st">&quot;ch.qos.logback&quot;</span> % <span class="st">&quot;logback-core&quot;</span> % <span class="st">&quot;1.0.0&quot;</span>,
+                            <span class="st">&quot;ch.qos.logback&quot;</span> % <span class="st">&quot;logback-classic&quot;</span> % <span class="st">&quot;1.0.0&quot;</span>,
+                            ...
+                            )
+
+<span class="co">// 添加测试代码编译或者运行期间使用的依赖</span>
+libraryDependencies ++= Seq(<span class="st">&quot;org.scalatest&quot;</span> %% <span class="st">&quot;scalatest&quot;</span> % <span class="st">&quot;1.8&quot;</span> % <span class="st">&quot;test&quot;</span>) </code></pre>
+<p>甚至于直接使用ivy的xml定义格式:</p>
+<pre class="sourceCode scala"><code class="sourceCode scala">ivyXML :=
+  &lt;dependencies&gt;
+    &lt;dependency org=<span class="st">&quot;org.eclipse.jetty.orbit&quot;</span> name=<span class="st">&quot;javax.servlet&quot;</span> rev=<span class="st">&quot;3.0.0.v201112011016&quot;</span>&gt;
+        &lt;artifact name=<span class="st">&quot;javax.servlet&quot;</span> <span class="kw">type</span>=<span class="st">&quot;orbit&quot;</span> ext=<span class="st">&quot;jar&quot;</span>/&gt;
+    &lt;/dependency&gt;
+    &lt;exclude module=<span class="st">&quot;junit&quot;</span>/&gt;
+    &lt;exclude module=<span class="st">&quot;activation&quot;</span>/&gt;
+    &lt;exclude module=<span class="st">&quot;jmxri&quot;</span>/&gt;
+    &lt;exclude module=<span class="st">&quot;jmxtools&quot;</span>/&gt;
+    &lt;exclude module=<span class="st">&quot;jms&quot;</span>/&gt;
+    &lt;exclude module=<span class="st">&quot;mail&quot;</span>/&gt;
+  &lt;/dependencies&gt;</code></pre>
+<p>在这里，我们排除了某些不必要的依赖，并且声明了某个定制过的依赖声明。</p>
+<p>当然， build.sbt文件中还可以定义很多东西，比如添加插件，声明额外的repository，声明各种编译参数等等，我们这里就不在一一赘述了。</p>
+<h4 id="project目录即相关文件介绍"><a href="#TOC"><span class="header-section-number">2.3.2.3</span> project目录即相关文件介绍</a></h4>
+<p>project目录下的几个文件实际上都是非必须存在的，可以根据情况添加。</p>
+<p><strong>build.properties</strong>文件声明使用的要使用哪个版本的SBT来编译当前项目， 最新的sbt boot launcher可以能够兼容编译所有0.10.x版本的SBT构建项目，比如如果我使用的是0.12版本的sbt，但却想用0.11.3版本的sbt来编译当前项目，则可以在build.properties文件中添加<code>sbt.version=0.11.3</code>来指定。 默认情况下，当前项目的构建采用使用的sbt boot launcher对应的版本。</p>
+<p><strong>plugins.sbt</strong>文件用来声明当前项目希望使用哪些插件来增强当前项目使用的sbt的功能，比如像assembly功能，清理ivy local cache功能，都有相应的sbt插件供使用， 要使用这些插件只需要在plugins.sbt中声明即可，不用自己去再造轮子：</p>
+<pre class="sourceCode scala"><code class="sourceCode scala">resolvers += Resolver.<span class="fu">url</span>(<span class="st">&quot;git://github.com/jrudolph/sbt-dependency-graph.git&quot;</span>)
+
+resolvers += <span class="st">&quot;sbt-idea-repo&quot;</span> at <span class="st">&quot;http://mpeltonen.github.com/maven/&quot;</span>
+
+<span class="fu">addSbtPlugin</span>(<span class="st">&quot;com.github.mpeltonen&quot;</span> % <span class="st">&quot;sbt-idea&quot;</span> % <span class="st">&quot;1.1.0&quot;</span>)
+
+<span class="fu">addSbtPlugin</span>(<span class="st">&quot;net.virtual-void&quot;</span> % <span class="st">&quot;sbt-dependency-graph&quot;</span> % <span class="st">&quot;0.6.0&quot;</span>)</code></pre>
+<p>在笔者的项目中， 使用sbt-idea来生成IDEA IDE对应的meta目录和文件，以便能够使用IDEA来编写项目代码； 使用sbt-dependency-graph来发现项目使用的各个依赖之间的关系；</p>
+<p>为了能够成功加载这些sbt插件，我们将他们的查找位置添加到resolovers当中。有关resolvers的内容，我们后面将会详细介绍，这里注意一个比较有趣的地方就是，sbt支持直接将相应的github项目作为依赖或者插件依赖，而不用非得先将相应的依赖或者插件发布到maven或者ivy的repository当中才可以使用。</p>
+<h4 id="其它"><a href="#TOC"><span class="header-section-number">2.3.2.4</span> 其它</a></h4>
+<p>以上目录和文件通常是在创建项目的时候需要我们创建的，实际上， SBT还会在编译或者运行期间自动生成某些相应的目录和文件，比如SBT会在项目的根目录下和project目录下自动生成相应的target目录，并将编译结果或者某些缓存的信息置于其中， 一般情况下，我们不希望将这些目录和文件记录到版本控制系统中，所以，通常会将这些目录和文件排除在版本管理之外。</p>
+<p>比如， 如果我们使用git来做版本控制，那么就可以在.gitignore中添加一行<code>&quot;target/&quot;</code>来排除项目根目录下和project目录下的target目录及其相关文件。</p>
+<blockquote>
+<p>TIPS</p>
+在sbt0.7.x时代， 我们只要创建项目目录，然后在项目目录下敲入sbt，则应该创建哪些需要的目录和文件就会由sbt自动为我们生成， 而sbt0.10之后，这项福利就没有了。 所以，刚开始，我们可能会认为要很苦逼的执行一长串命令来生成相应的目录和文件：
+<pre>
+    $ touch build.sbt
+    $ mkdir src
+    $ mkdir src/main
+    $ mkdir src/main/java
+    $ mkdir src/main/resources
+    $ mkdir src/main/scala
+    $ mkdir src/test
+    $ mkdir src/test/java
+    $ mkdir src/test/resources
+    $ mkdir src/test/scala
+    $ mkdir project
+    $ ...
+</pre>
+<p>如果是Maven的用户，是不是很想念Maven的Archetype特性那？！ 其实， SBT为我们关了一扇窗，却开了另一道门， 我们可以使用giter8来自动化以上步骤。 giter8可以自动从github上抓取.g8项目模板，并自动在本地生成相应的项目结构， 比如笔者在github上创建了xsbt.g8项目模板，则直接执行<code>&quot;g8 fujohnwang/xsbt&quot;</code>就可以在本地自动生成一个sbt的项目。 有关giter8的更多信息可参考<a href="https://github.com//giter8"><code class="url">https://github.com//giter8</code></a>.</p>
+</blockquote>
+<h3 id="sbt的使用"><a href="#TOC"><span class="header-section-number">2.3.3</span> SBT的使用</a></h3>
+<p>SBT支持两种使用方式：</p>
+<ol style="list-style-type: decimal">
+<li>批处理模式(batch mode)</li>
+<li>可交互模式(interactive mode)</li>
+</ol>
+<p>批处理模式是指我们可以在命令行模式下直接依次执行多个SBT命令， 比如:</p>
+<pre><code>$ sbt compile test package</code></pre>
+<p>而可交互模式则直接运行sbt，后面不跟任何SBT命令，在这种情况下， 我们将直接进入sbt控制台(console)， 在sbt控制台中，我们可以输入任何合法的sbt命令并获得相应的反馈：</p>
+<pre><code>$ sbt
+&gt; compile
+[success] Total time: 1 s, completed Sep 3, 2012 9:34:58 PM
+&gt; test
+[info] No tests to run for test:test
+[success] Total time: 0 s, completed Sep 3, 2012 9:35:04 PM
+&gt; package
+[info] Packaging XXX_XXX_2.9.2-0.1-SNAPSHOT.jar ...
+[info] Done packaging.
+[success] Total time: 0 s, completed Sep 3, 2012 9:35:08 PM</code></pre>
+<blockquote>
+<p>TIPS</p>
+<p>在可交互模式的sbt控制台下，可以输入help获取进一步的使用信息。</p>
+</blockquote>
+<p>在以上实例中，我们依次执行了compile， test和package命令， 实际上， 这些命令之间是有依赖关系的，如果仅仅是为了package，那么，只需要执行package命令即可， package命令依赖的compile和test命令将先于package命令执行，以保证它们之间的依赖关系得以满足。</p>
+<p>除了compile，test和package命令， 下面列出了更多可用的sbt命令供读者参考:</p>
+<ul>
+<li>compile</li>
+<li>test-compile</li>
+<li>run</li>
+<li>test</li>
+<li>package</li>
+</ul>
+<p>这些命令在某些情况下也可以结合SBT的触发执行(Trigger Execution)机制一起使用， 唯一需要做的就只是在相应的命令前追加<code>~</code>符号，实际上，这个特性是让笔者最着迷的， 比如:</p>
+<pre><code>$ sbt ~compile</code></pre>
+<p>以上命令意味着， 我更改了任何源代码并且保存之后，将直接触发SBT编译相应的源代码以及相应的依赖变更。 假如我们有2个显示器， 左边是命令行窗口，右边是编辑器或者IDE窗口，那么，我们只要在右边的显示器中编辑源代码，左边的显示器就可以实时的反馈编译结果， 这将极大加快开发的迭代速度， 听起来并且看起来是不是很cool？！ <img src="images/dual_screen_on_incremental_compile.jpg" alt="双屏使用SBT增量编译的演示图" /></p>
+<blockquote>
+<p>NOTE</p>
+<p>原则上， <code>~</code>和相应命令之间应该用空格分隔，不过对于一般的命令来讲，直接前缀<code>~</code>也是可以的，就跟我们使用<code>~compile</code>的方式一样。</p>
+</blockquote>
+<h3 id="sbt的依赖管理"><a href="#TOC"><span class="header-section-number">2.3.4</span> SBT的依赖管理</a></h3>
+<p>在SBT中， 类库的依赖管理可以分为两类：</p>
+<ol style="list-style-type: decimal">
+<li>unmanaged dependencies</li>
+<li>managed dependencies</li>
+</ol>
+<p>大部分情况下，我们会采用managed dependencies方式来管理依赖关系，但也不排除为了快速构建项目环境等特殊情况下，直接使用unmanaged dependencies来管理依赖关系。</p>
+<h4 id="unmanaged-dependencies简介"><a href="#TOC"><span class="header-section-number">2.3.4.1</span> Unmanaged Dependencies简介</a></h4>
+<p>要使用unmanaged dependencies的方式来管理依赖其实很简单，只需要将想要放入当前项目classpath的jar包放到<strong>lib</strong>目录下即可。</p>
+<p>如果对默认的lib目录看着不爽， 我们也可以通过配置来更改这个默认位置，比如使用3rdlibs:</p>
+<pre class="sourceCode scala"><code class="sourceCode scala">unmanagedBase &lt;&lt;= baseDirectory { base =&gt; base / <span class="st">&quot;3rdlibs&quot;</span> }</code></pre>
+<p>这里可能需要解释一下以上配置。 首先unmanagedBase这个Key用来表示unmanaged dependencies存放第三方jar包的路径， 具体的值默认是<strong>lib</strong>， 我们为了改变这个Key的值， 采用&lt;&lt;=操作符， 根据baseDirectory的值转换并计算出一个新值赋值给unmanagedBase这个Key， 其中， baseDirectory指的是当前项目目录，而&lt;&lt;=操作符(其实是Key的方法)则负责从已知的某些Key的值计算出新的值并赋值给指定的Key。</p>
+<p>关于Unmanaged dependencies，一般情况下，需要知道的基本上就这些。</p>
+<h4 id="managed-dependencies详解"><a href="#TOC"><span class="header-section-number">2.3.4.2</span> Managed Dependencies详解</a></h4>
+<p>sbt的managed dependencies采用Apache Ivy的依赖管理方式， 可以支持从Maven或者Ivy的Repository中自动下载相应的依赖。</p>
+<p>简单来说，在SBT中， 使用managed dependencies基本上就意味着往<strong>libraryDependencies</strong>这个Key中添加所需要的依赖， 添加的一般格式如下:</p>
+<blockquote>
+<p>libraryDependencies += groupID % artifactID % revision</p>
+</blockquote>
+<p>比如：</p>
+<blockquote>
+<p>libraryDependencies += &quot;org.apache.derby&quot; % &quot;derby&quot; % &quot;10.4.1.3&quot;</p>
+</blockquote>
+<p>这种格式其实是简化的常见形式，实际上，我们还可以做更多微调， 比如：</p>
+<pre class="sourceCode scala"><code class="sourceCode scala">(<span class="dv">1</span>) libraryDependencies += <span class="st">&quot;org.apache.derby&quot;</span> % <span class="st">&quot;derby&quot;</span> % <span class="st">&quot;10.4.1.3&quot;</span> % <span class="st">&quot;test&quot;</span>
+(<span class="dv">2</span>) libraryDependencies += <span class="st">&quot;org.apache.derby&quot;</span> % <span class="st">&quot;derby&quot;</span> % <span class="st">&quot;10.4.1.3&quot;</span> <span class="fu">exclude</span>(<span class="st">&quot;org&quot;</span>, <span class="st">&quot;artifact&quot;</span>)
+(<span class="dv">3</span>) libraryDependencies += <span class="st">&quot;org.apache.derby&quot;</span> %% <span class="st">&quot;derby&quot;</span> % <span class="st">&quot;10.4.1.3&quot;</span> </code></pre>
+<p>(1)的形式允许我们限定依赖的范围只限于测试期间； (2)的形势允许我们排除递归依赖中某些我们需要排除的依赖； (3)的形式则会在依赖查找的时候，将当前项目使用的scala版本号追加到artifactId之后作为完整的artifactId来查找依赖，比如如果我们的项目使用scala2.9.2，那么(3)的依赖声明实际上等同于<code>&quot;org.apache.derby&quot; %% &quot;derby_2.9.2&quot; % &quot;10.4.1.3&quot;</code>，这种方式更多是为了简化同一依赖类库存在有多个Scala版本对应的发布的情况。</p>
+<p>如果有一堆依赖要添加，一行一行的添加是一种方式，其实也可以一次添加多个依赖：</p>
+<pre class="sourceCode scala"><code class="sourceCode scala">libraryDependencies ++= Seq(<span class="st">&quot;org.apache.derby&quot;</span> %% <span class="st">&quot;derby&quot;</span> % <span class="st">&quot;10.4.1.3&quot;</span>,
+                            <span class="st">&quot;org.scala-tools&quot;</span> %% <span class="st">&quot;scala-stm&quot;</span> % <span class="st">&quot;0.3&quot;</span>, 
+                            ...)</code></pre>
+<h4 id="resovers简介"><a href="#TOC"><span class="header-section-number">2.3.4.3</span> Resovers简介</a></h4>
+<p>对于managed dependencies来说，虽然我们指定了依赖哪些类库，但有没有想过，SBT是如何知道到哪里去抓取这些类库和相关资料那？！</p>
+<p>实际上，默认情况下， SBT回去默认的Maven2的Repository中抓取依赖，但如果默认的Repository中找不到我们的依赖，那我们可以通过resolver机制，追加更多的repository让SBT去查找并抓取， 比如：</p>
+<blockquote>
+<p>resolvers += &quot;Sonatype OSS Snapshots&quot; at &quot;https://oss.sonatype.org/content/repositories/snapshots&quot;</p>
+</blockquote>
+<p>at<sup><a href="#fn2" class="footnoteRef" id="fnref2">2</a></sup>之前是要追加的repository的标志名称（任意取），at后面则是要追加的repository的路径。</p>
+<p>除了可远程访问的Maven Repo，我们也可以将本地的Maven Repo追加到resolver的搜索范围：</p>
+<blockquote>
+<p>resolvers += &quot;Local Maven Repository&quot; at &quot;file://&quot;+Path.userHome.absolutePath+&quot;/.m2/repository&quot;</p>
+</blockquote>
+<h2 id="sbt进阶篇"><a href="#TOC"><span class="header-section-number">2.4</span> SBT进阶篇</a></h2>
+<h3 id="scala形式的build定义"><a href="#TOC"><span class="header-section-number">2.4.1</span> .scala形式的build定义</a></h3>
+<p>对于简单的项目来讲，.sbt形式的build定义文件就可以满足需要了，但如果我们想要使用SBT的一些高级特性，比如自定义Task， 多模块的项目构建， 就必须使用.scala形式的build定义了。 简单来讲，.sbt能干的事情，.scala形式的build定义都能干，反之，则不然。</p>
+<p>要使用.scala形式的build定义，只要在当前项目根目录下的project/子目录下新建一个.scala后缀名的scala源代码文件即可，比如Build.scala（名称可以任意，一般使用Build.scala）：</p>
+<pre class="sourceCode scala"><code class="sourceCode scala"><span class="kw">import</span> sbt.<span class="fu">_</span>
+<span class="kw">import</span> Keys.<span class="fu">_</span>
+
+<span class="kw">object</span> HelloBuild <span class="kw">extends</span> Build {
+    <span class="kw">override</span> <span class="kw">lazy</span> <span class="kw">val</span> settings = <span class="kw">super</span>.<span class="fu">settings</span> ++ Seq(..)
+    
+    <span class="kw">lazy</span> <span class="kw">val</span> root = <span class="fu">Project</span>(id = <span class="st">&quot;hello&quot;</span>,
+                            base = <span class="fu">file</span>(<span class="st">&quot;.&quot;</span>),
+                            settings = Project.<span class="fu">defaultSettings</span> ++ Seq(..))
+}</code></pre>
+<p>build的定义只要扩展sbt.Build，然后添加相应的逻辑即可，所有代码都是标准的scala代码，在Build定义中，我们可以添加更多的settings， 添加自定义的task，添加相应的val和方法定义等等， 更多代码实例可以参考SBT Wiki(<a href="https://github.com/harrah/xsbt/wiki/Examples"><code class="url">https://github.com/harrah/xsbt/wiki/Examples</code></a>)，另外，我们在后面介绍SBT的更多高级特性的时候，也会引入更多.scala形式的build定义的使用。</p>
+<pre><code>NOTE
+
+.sbt和.scala之间不得不说的那些事儿
+
+实际上， 两种形式并不排斥，并不是说我使用了前者，就不能使用后者，对于某些单一的项目来说，我们可以在.sbt中定义常用的settings，而在.scala中定义自定义的其它内容， SBT在编译期间，会将.sbt中的settings等定义与.scala中的定义合并，作为最终的build定义使用。
+
+只有在多模块项目构建中，为了避免多个.sbt的存在引入过多的繁琐，才会只用.scala形式的build定义。
+
+.sbt和.scala二者之间的settings是可互相访问的， .scala中的内容会被import到.sbt中，而.sbt中的settings也会被添加到.scala的settings当中。默认情况下，.sbt中的settings会被纳入Project级别的Scope中，除非明确指定哪些Settings定义的Scope； .scala中则可以将settings纳入Build级别的Scope，也可以纳入Project级别的Scope。</code></pre>
+<h4 id="sbt项目结构的本质"><a href="#TOC"><span class="header-section-number">2.4.1.1</span> SBT项目结构的本质</a></h4>
+<p>在了解了.sbt和.scala两种形式的build定义形式之后， 我们就可以来看看SBT项目构建结构的本质了。</p>
+<p>首先， 一个SBT项目，与构建相关联的基本设施可以概况为3个部分， 即：</p>
+<ol style="list-style-type: decimal">
+<li>项目的根目录， 比如hello/， 用来界定项目构建的边界；</li>
+<li>项目根目录下的*.sbt文件， 比如hello/build.sbt， 用来指定一般性的build定义；</li>
+<li>项目根目录下的project/*.scala文件， 比如hello/project/Build.scala， 用来指定一些复杂的， *.sbt形式的build定义文件不太好搞的设置；</li>
+</ol>
+<p>也就是说， 对于一个SBT项目来说，SBT在构建的时候，只关心两点：</p>
+<ol style="list-style-type: decimal">
+<li>build文件的类型（是*.sbt还是*.scala）；</li>
+<li>build文件的存放位置（*.sbt文件只有存放在项目的根目录下， SBT才会关注它或者它们， 而*.scala文件只有存放在项目根目录下的project目录下，SBT才不会无视它或者它们）<sup><a href="#fn3" class="footnoteRef" id="fnref3">3</a></sup>；</li>
+</ol>
+<p>在以上基础规则的约束下，我们来引入一个推导条件， 即：</p>
+<pre><code>项目的根目录下的project/目录，其本身也是一个标准的SBT项目。</code></pre>
+<p>在这个条件下，我们再来仔细分析hello/project/目录，看它目录下的各项artifacts到底本质上应该是什么。</p>
+<p>我们说项目根目录下的project/子目录下的*.scala文件是当前项目的build定义文件， 而根据以上的推导条件， project/目录本身又是一个SBT项目，我们还知道，SBT下面下的*.scala都是当前项目的源代码，所以project/下的*.scala文件， 其实都是project这个目录下的SBT项目的源代码，而这些源代码中，如果有人定义了sbt.Build，那么就会被用作project目录上层目录界定的SBT项目的build定义文件， right？！</p>
+<p>那么，来想一个问题，如果project/目录下的*.scala是源代码文件，而project目录整体又是一个标准的SBT项目， 假如我们这些*.scala源码文件中需要依赖其他三方库，通常我们会怎么做？</p>
+<p>对， 在当前项目的根目录下新建一个build.sbt文件，将依赖添加进去，所以，我们就有了如下的项目结构：</p>
+<pre><code>hello/
+    *.scala
+    build.sbt
+    project/
+        *.scala
+        build.sbt</code></pre>
+<p>也就是说，我们可以在书写当前项目的build定义的时候(因为build定义也是用scala来写)，借用第三方依赖来完成某些工作，而不用什么都重新去写，在project/build.sbt下添加项目依赖，那么就可以在project/*.scala里面使用，进而构建出hello/项目的build定义是什么， 即hello/project/这个SBT项目，支撑了上一层hello/这个项目的构建！</p>
+<p>现在再来想一下，如果hello/project/这个项目的构建要用到其它SBT特性，比如自定义task或者command啥的，我们该怎么办？！</p>
+<p>既然hello/project/也是一个SBT项目，那么按照惯例，我们就可以再其下再新建一个project/目录，在这个下一层的project/目录下再添加*.scala源文件作为hello/project/这个SBT项目的build定义文件， 整个项目又变成了：</p>
+<pre><code>hello/
+    *.scala
+    build.sbt
+    project/
+        *.scala
+        build.sbt
+        /project
+            *.scala</code></pre>
+<p>而如果hello/project/project/下的源码又要依赖其他三方库那？！ God， 再添加*.sbt或更深一层的project/*.scala！</p>
+<p>也就是说， 从第一层的项目根目录开始， 其下project/目录内部再嵌套project/目录，可以无限递归，而且每一层的project/目录都界定了一个SBT项目，而每一个下层的project目录界定的SBT项目其实都是对上一层的SBT项目做支持，作为上一层SBT项目的build定义项目，这就跟俄罗斯娃娃这种玩具似的， 递归嵌套，一层又包一层：</p>
+<div class="figure">
+<img src="images/matpewka_doll.png" alt="俄罗斯娃娃玩具" /><p class="caption">俄罗斯娃娃玩具</p>
+</div>
+<p>一般情况下，我们不会搞这么多嵌套，但理解了SBT项目的这个结构上的本质，可以帮助我们更好的理解后面的内容，如果读者看一遍没能理解，那不妨多看几次，多参考其他资料，多揣摩揣摩吧！</p>
+<h3 id="自定义sbt-task"><a href="#TOC"><span class="header-section-number">2.4.2</span> 自定义SBT Task</a></h3>
+<p>大部分情况下，我们都是使用SBT内建的Task，比如compile， run等，实际上， 除了这些，我们还可以在build定义中添加更多自定义的Task。</p>
+<p>自定义SBT的Task其实很简单，就跟把大象关冰箱里一样简单， 概况来说其实就是:</p>
+<ol style="list-style-type: decimal">
+<li>定义task；</li>
+<li>将task添加到项目的settings当中；</li>
+<li>使用自定义的task；</li>
+</ol>
+<h4 id="定义task"><a href="#TOC"><span class="header-section-number">2.4.2.1</span> 定义task</a></h4>
+<p>Task的定义分两部分，第一部分就是要定义一个TaskKey来标志Task， 第二部分则是定义Task的执行逻辑。</p>
+<p>假设我们要定义一个简单的打印&quot;hello, sbt~&quot;信息的task，那第一步就是先定义它的Key，如下代码所示：</p>
+<pre class="sourceCode scala"><code class="sourceCode scala"><span class="kw">val</span> hello = TaskKey[Unit](<span class="st">&quot;hello&quot;</span>, <span class="st">&quot;just say hello&quot;</span>)</code></pre>
+<p>TaskKey的类型指定了对应task的执行结果，因为我们只想打印一个字符串，不需要返回什么数据，所以定义的是TaskKey[Unit]。 定义TaskKey最主要的一点就是要指定一个名称（比如第一个参数“hello”），这个名称将是我们调用该task的标志性建筑。 另外，还可以可选择的通过第二个参数传入该task的相应描述和说明。</p>
+<p>有了task对应的Key之后，我们就要定义task对应的执行逻辑，并通过<code>:=</code>方法将相应的key和执行逻辑定义关联到一起：</p>
+<pre class="sourceCode scala"><code class="sourceCode scala">hello := {
+    <span class="fu">println</span>(<span class="st">&quot;hello, sbt~&quot;</span>)
+}</code></pre>
+<p>完整的task定义代码如下所示：</p>
+<pre class="sourceCode scala"><code class="sourceCode scala"><span class="kw">val</span> hello = TaskKey[Unit](<span class="st">&quot;hello&quot;</span>, <span class="st">&quot;just say hello&quot;</span>)
+
+hello := {
+    <span class="fu">println</span>(<span class="st">&quot;hello, sbt~&quot;</span>)
+}</code></pre>
+<pre><code>NOTE
+
+:= 只是简单的将task的执行逻辑和key关联到一起， 如果之前已经将某一执行逻辑跟同一key关联过，则后者将覆盖前者，另外，如果我们想要服用其他的task的执行逻辑，或者依赖其他task，只有一个:=就有些力不从心了。这些情况下，可以考虑使用~=或者&lt;&lt;=等方法，他们可以借助之前的task来映射或者转换新的task定义。比如（摘自sbt wiki）:
+// These two settings are equivalent
+intTask &lt;&lt;= intTask map { (value: Int) =&gt; value + 1 }
+intTask ~= { (value: Int) =&gt; value + 1 }</code></pre>
+<h4 id="将task添加到项目的settings当中"><a href="#TOC"><span class="header-section-number">2.4.2.2</span> 将task添加到项目的settings当中</a></h4>
+<p>光完成了task的Key和执行逻辑定义还不够，我们要将这个task添加到项目的Settings当中才能使用它，所以，我们稍微对之前的代码做一补充：</p>
+<pre class="sourceCode scala"><code class="sourceCode scala"><span class="kw">object</span> ProjectBuild <span class="kw">extends</span> Build {
+
+  <span class="kw">val</span> hello = TaskKey[Unit](<span class="st">&quot;hello&quot;</span>, <span class="st">&quot;just say hello&quot;</span>)
+
+  <span class="kw">val</span> helloTaskSetting = hello := {
+    <span class="fu">println</span>(<span class="st">&quot;hello, sbt~&quot;</span>)
+  }
+
+  <span class="kw">lazy</span> <span class="kw">val</span> root = <span class="fu">Project</span>(id = <span class="st">&quot;&quot;</span>, base = <span class="fu">file</span>(<span class="st">&quot;.&quot;</span>)).<span class="fu">settings</span>(Defaults.<span class="fu">defaultSettings</span> ++ Seq(helloTaskSetting): _*)
+
+}</code></pre>
+<p>将Key与task的执行逻辑相关联的过程实际上是构建某个Setting的过程，虽然我们也可以将以上定义写成如下形式:</p>
+<pre class="sourceCode scala"><code class="sourceCode scala">  <span class="kw">lazy</span> <span class="kw">val</span> root = <span class="fu">Project</span>(id = <span class="st">&quot;&quot;</span>, base = <span class="fu">file</span>(<span class="st">&quot;.&quot;</span>)).<span class="fu">settings</span>(Defaults.<span class="fu">defaultSettings</span> ++ Seq(hello := {
+    <span class="fu">println</span>(<span class="st">&quot;hello, sbt~&quot;</span>)
+  }): _*)</code></pre>
+<p>但未免代码就太不雅观，也不好管理了(如果要添加多个自定义task，想想，用这种形式是不是会让代码丑陋不堪那？！)，所以，我们引入了helloTaskSetting这个标志常量来帮助我们净化代码结构 ：）</p>
+<h4 id="测试和运行定义的task"><a href="#TOC"><span class="header-section-number">2.4.2.3</span> 测试和运行定义的task</a></h4>
+<p>万事俱备之后，就可以使用我们的自定义task了，使用定义Key的时候指定的task名称来调用它即可：</p>
+<pre><code>$ sbt hello
+hello, sbt~
+// 或者
+$ sbt
+&gt; hello
+hello, sbt~
+[success] Total time: 0 s, completed Oct 4, 2012 2:48:48 PM</code></pre>
+<p>怎么样？ 在SBT中自定义task是不是很简单那？！</p>
+<h3 id="sbt-plugins"><a href="#TOC"><span class="header-section-number">2.4.3</span> SBT Plugins</a></h3>
+<p>每个项目最终都要以相应的形式发布<sup><a href="#fn4" class="footnoteRef" id="fnref4">4</a></sup>，比如二进制包， 源码包，甚至直接可用的部署包等等， 假设我们想把当前的SBT项目打包成可直接解压部署的形式，我们可以使用刚刚介绍的自定义task来完成这一工作:</p>
+<pre class="sourceCode scala"><code class="sourceCode scala"><span class="kw">object</span> ProjectBuild <span class="kw">extends</span> Build {
+
+  <span class="kw">import</span> Tasks.<span class="fu">_</span>
+
+  <span class="kw">lazy</span> <span class="kw">val</span> root = <span class="fu">Project</span>(id = <span class="st">&quot;&quot;</span>, base = <span class="fu">file</span>(<span class="st">&quot;.&quot;</span>)).<span class="fu">settings</span>(Defaults.<span class="fu">defaultSettings</span> ++ Seq(distTask, helloTaskSetting): _*)
+
+}
+
+<span class="kw">object</span> Tasks {
+
+  <span class="kw">val</span> hello = TaskKey[Unit](<span class="st">&quot;hello&quot;</span>, <span class="st">&quot;just say hello&quot;</span>)
+
+  <span class="kw">val</span> helloTaskSetting = hello := {
+    <span class="fu">println</span>(<span class="st">&quot;hello, sbt~&quot;</span>)
+  }
+  
+  <span class="kw">val</span> dist = TaskKey[Unit](<span class="st">&quot;dist&quot;</span>, <span class="st">&quot;distribute current project as zip or gz packages&quot;</span>)
+
+  <span class="kw">val</span> distTask = dist &lt;&lt;= (baseDirectory, target, fullClasspath in Compile, packageBin in Compile, resources in Compile, streams) map {
+    (baseDir, targetDir, cp, jar, res, s) =&gt;
+      s.<span class="fu">log</span>.<span class="fu">info</span>(<span class="st">&quot;[dist] prepare distribution folders...&quot;</span>)
+      <span class="kw">val</span> assemblyDir = targetDir / <span class="st">&quot;dist&quot;</span>
+      <span class="kw">val</span> confDir = assemblyDir / <span class="st">&quot;conf&quot;</span>
+      <span class="kw">val</span> libDir = assemblyDir / <span class="st">&quot;lib&quot;</span>
+      <span class="kw">val</span> binDir = assemblyDir / <span class="st">&quot;bin&quot;</span>
+      Array(assemblyDir, confDir, libDir, binDir).<span class="fu">foreach</span>(IO.<span class="fu">createDirectory</span>)
+
+      s.<span class="fu">log</span>.<span class="fu">info</span>(<span class="st">&quot;[dist] copy jar artifact to lib...&quot;</span>)
+      IO.<span class="fu">copyFile</span>(jar, libDir / jar.<span class="fu">name</span>)
+
+      s.<span class="fu">log</span>.<span class="fu">info</span>(<span class="st">&quot;[dist] copy 3rd party dependencies to lib...&quot;</span>)
+      cp.<span class="fu">files</span>.<span class="fu">foreach</span>(f =&gt; <span class="kw">if</span> (f.<span class="fu">isFile</span>) IO.<span class="fu">copyFile</span>(f, libDir / f.<span class="fu">name</span>))
+
+      s.<span class="fu">log</span>.<span class="fu">info</span>(<span class="st">&quot;[dist] copy shell scripts to bin...&quot;</span>)
+      ((baseDir / <span class="st">&quot;bin&quot;</span>) ** <span class="st">&quot;*.sh&quot;</span>).<span class="fu">get</span>.<span class="fu">foreach</span>(f =&gt; IO.<span class="fu">copyFile</span>(f, binDir / f.<span class="fu">name</span>))
+
+      s.<span class="fu">log</span>.<span class="fu">info</span>(<span class="st">&quot;[dist] copy configuration templates to conf...&quot;</span>)
+      ((baseDir / <span class="st">&quot;conf&quot;</span>) * <span class="st">&quot;*.xml&quot;</span>).<span class="fu">get</span>.<span class="fu">foreach</span>(f =&gt; IO.<span class="fu">copyFile</span>(f, confDir / f.<span class="fu">name</span>))
+
+      s.<span class="fu">log</span>.<span class="fu">info</span>(<span class="st">&quot;[dist] copy examples chanenl deployment...&quot;</span>)
+      IO.<span class="fu">copyDirectory</span>(baseDir / <span class="st">&quot;examples&quot;</span>, assemblyDir / <span class="st">&quot;examples&quot;</span>)
+
+      res.<span class="fu">filter</span>(_.<span class="fu">name</span>.<span class="fu">startsWith</span>(<span class="st">&quot;logback&quot;</span>)).<span class="fu">foreach</span>(f =&gt; IO.<span class="fu">copyFile</span>(f, assemblyDir / f.<span class="fu">name</span>))
+  }
+}</code></pre>
+<p>这种方式好是好，可就是不够通用，你我应该都不想每个项目里的Build文件里都拷贝粘帖一把这些代码吧？！ 况且， 哪些artifacts要打包进去，打包之前哪些参数可以调整，以这种形式来看，都不方便调整(如果你不烦每次都添加修改代码的话)， 那SBT有没有更好的方式来支持类似的需求那？！ 当然有咯， SBT的Plugins机制就是为此而生的！</p>
+<h4 id="sbt-plugin简介"><a href="#TOC"><span class="header-section-number">2.4.3.1</span> SBT Plugin简介</a></h4>
+<p>SBT Plugin机制允许我们扩展SBT项目的build定义， 这里的扩展基本可以理解为允许我们向项目的build定义里添加各种所需的Settings， 比如自定义Task，瞅一眼Plugin的代码就更明了了：</p>
+<pre class="sourceCode scala"><code class="sourceCode scala"><span class="kw">trait</span> Plugin {
+  <span class="kw">def</span> settings: Seq[Setting[_]] = Nil
+}</code></pre>
+<p>我们知道如果项目位于hello目录下的话， 该项目的build定义可以位于<code>hello/\*.sbt</code>或者<code>hello/project/*.scala</code>两种位置，既然Plugin是对build定义的扩展，那么， 我们就可以认为项目的build定义依赖这些plugin的某些状态或者行为，即plugin属于项目build定义的某种依赖，从这个层次来看，plugin的配置和使用跟library dependency的配置和使用是一样的(具体有稍微的差异)。不过，既然plugin是对build定义的扩展（及被依赖），那么，我们应该在build定义对应的SBT项目的build定义中配置它(听起来是不是有些绕？ 如果读者感觉绕，看不明白的话，不妨回头看看&quot;SBT项目结构的本质&quot;一节的内容)，即<code>hello/project/\*.sbt</code>或者<code>hello/project/project/\*.scala</code>, 大多数情况下，我们会直接在像<code>hello/project/plugins.sbt</code><sup><a href="#fn5" class="footnoteRef" id="fnref5">5</a></sup>配置文件中配置和添加Plugin：</p>
+<pre class="sourceCode scala"><code class="sourceCode scala">resolvers += Resolver.<span class="fu">url</span>(<span class="st">&quot;git://github.com/jrudolph/sbt-dependency-graph.git&quot;</span>)
+
+resolvers += <span class="st">&quot;sbt-idea-repo&quot;</span> at <span class="st">&quot;http://mpeltonen.github.com/maven/&quot;</span>
+
+<span class="fu">addSbtPlugin</span>(<span class="st">&quot;com.github.mpeltonen&quot;</span> % <span class="st">&quot;sbt-idea&quot;</span> % <span class="st">&quot;1.1.0&quot;</span>)
+
+<span class="fu">addSbtPlugin</span>(<span class="st">&quot;net.virtual-void&quot;</span> % <span class="st">&quot;sbt-dependency-graph&quot;</span> % <span class="st">&quot;0.6.0&quot;</span>)</code></pre>
+<p>因为Plugin实现一般也都是以三方包的形式发布的，<code>addSbtPlugin</code>所做的事情实际上就是根据Plugin发布时使用的artifactId等标志性信息<sup><a href="#fn6" class="footnoteRef" id="fnref6">6</a></sup>，将它们转换成Setting添加到当前项目build定义中。</p>
+<p>如果Plugin是发布到SBT默认会查找的Maven或者Ivy Repository中，则只需要<code>addSbtPlugin</code>就行了， 否则， 需要将Plugin发布到的Repository添加到resolvers以便SBT可以发现并加载成功。</p>
+<h4 id="有哪些现成的plugin可以用吗"><a href="#TOC"><span class="header-section-number">2.4.3.2</span> 有哪些现成的Plugin可以用吗？</a></h4>
+<p>在前面的配置实例中，我们已经看到两个笔者常用的Plugin:</p>
+<ol style="list-style-type: decimal">
+<li><a href="https://github.com/mpeltonen/sbt-idea">sbt-idea</a>
+<ul>
+<li>笔者使用IntelliJ IDEA来开发scala应用， sbt-idea这个插件可以帮助我从SBT的配置中生成IDEA这个IDE对应的classpath，项目信息等元数据， 这样，我只要运行<code>sbt gen-idea</code>这一命令之后，就可以在IDEA中直接打开当前的SBT项目了。如果读者使用其他的IDEA，那也可以使用类似的插件，比如<a href="https://github.com/typesafehub/sbteclipse">sbteclipse</a>或者<a href="https://github.com/remeniuk/sbt-netbeans-plugin">sbt-netbeans-plugin</a>。</li>
+</ul></li>
+<li><a href="https://github.com/jrudolph/sbt-dependency-graph">sbt-dependency-graph</a>
+<ul>
+<li>项目的依赖越多， 依赖关系就越复杂， 这个插件可以帮助我们理清楚项目各个依赖之间的关系，完成跟Maven的dependency:tree类似的功能</li>
+</ul></li>
+</ol>
+<p>除了这些， 读者还可以在SBT的<a href="https://github.com/harrah/xsbt/wiki/sbt-0.10-plugins-list">Plugins List</a>中找到更多有用的Plugin，比如：</p>
+<ol style="list-style-type: decimal">
+<li><a href="https://github.com/siasia/xsbt-web-plugin">xsbt-web-plugin</a>
+<ul>
+<li>看名字就能猜到是干啥的了</li>
+</ul></li>
+<li><a href="https://github.com/sbt/sbt-assembly">sbt-assembly</a>
+<ul>
+<li>可以将当前项目的二进制包以及依赖的所有第三方库都打包成一个jar包发布，即one-jar， 对于那种直接运行的应用程序很方便</li>
+</ul></li>
+<li><a href="https://github.com/arktekk/sbt-aether-deploy">sbt-aether-deploy</a>
+<ul>
+<li>使用aether来部署当前项目， aethor是Maven中管理Repository的API，现在单独剥离出来更通用了</li>
+</ul></li>
+<li><a href="https://github.com/sbt/sbt-dirty-money">sbt-dirty-money</a>
+<ul>
+<li>SBT会将项目的依赖抓取到本地的ivy cache中缓存起来，避免频繁的update对带宽造成的浪费，但有些时候需要对缓存里失效的内容进行清理，使用这个插件可以避免自己手动遍历目录逐一删除相应的artifacts<br />关于现成可用的Plugin就介绍这些，更多的好东西还是有待读者自己去发掘吧！</li>
+</ul>
+<p>TIPS</p>
+<p>如果某些SBT Plugin个人经常用到，那么，可以将这些Plugin配置为Global plugin， 即在用户的home目录下的&quot;.sbt/plugins/&quot;目录下新建一个plugins.sbt文件（名称无所谓，类型有所谓，你懂的哦），然后将这些常用的插件配置进去，之后，在任何的SBT项目下，就都可以使用这些插件了，“配置一次，到处运行”！</p>
+<p>不过， 笔者建议， 跟项目相关的SBT Plugin还是应该配置到当前项目中，这样，走版本控制，别人都可统一使用这些Plugin，只有哪些自己常用，而与具体项目绑定关系不是很强的Plugin才配置为global的plugin， 道理跟git和svn处理ignore的做法差异是类似的！</p></li>
+</ol>
+<h4 id="想写个自己的sbt-plugin该咋整"><a href="#TOC"><span class="header-section-number">2.4.3.3</span> 想写个自己的SBT Plugin该咋整？！</a></h4>
+<p>编写一个自己的SBT Plugin其实并不复杂，一个SBT Plugin工程跟一般的SBT项目并无质上的差异，唯一的差别就在于我们需要在SBT Plugin项目的build定义中指定一项Setting用来表明当前项目是一个SBT Plugin项目，而不是一个一般的SBT项目，这项Setting即：</p>
+<pre class="sourceCode scala"><code class="sourceCode scala">sbtPlugin := <span class="kw">true</span></code></pre>
+<p>有了这项Setting， SBT在编译和发布当前这个Plugin项目的时候就会做两个事情：</p>
+<ol style="list-style-type: decimal">
+<li>将SBT API加入当前项目的classpath中（这样我们就可以在编写Plugin的时候使用到SBT的API）；</li>
+<li>在发布(publish-local, publish)当前项目的时候，SBT会搜寻sbt.Plugin的实现，然后将这些实现添加到sbt/sbt.plugins这个文件中，并将这个文件与当前Plugin项目的其它artifacts一起打包到jar中发布；</li>
+</ol>
+<p>Plugin项目发布之后，就可以在其他项目中引用它们，怎么用，前面详细介绍过了，这里不再赘述。</p>
+<p>有了编写SBT Plugin理论指导，我们就可以着手实践了， 我们先把hello这个自定义task转换为Plugin实现如下：</p>
+<pre class="sourceCode scala"><code class="sourceCode scala"><span class="co">// HelloSBT.scala</span>
+
+<span class="kw">import</span> sbt.<span class="fu">_</span>
+
+<span class="kw">object</span> HelloSBT <span class="kw">extends</span> Plugin {
+  <span class="kw">val</span> helloSbt = TaskKey[Unit](<span class="st">&quot;hello-sbt&quot;</span>, <span class="st">&quot;just say hello&quot;</span>)
+
+  <span class="kw">val</span> helloSbtSetting = helloSbt := {
+    <span class="fu">println</span>(<span class="st">&quot;hello, sbt~&quot;</span>)
+  }
+}</code></pre>
+<p>然后，我们为其配置build定义：</p>
+<pre class="sourceCode scala"><code class="sourceCode scala"><span class="co">// ${project.root}/build.sbt</span>
+
+name := <span class="st">&quot;hello_sbt_plugin&quot;</span>
+
+organization := <span class="st">&quot;com.github.fujohnwang&quot;</span>
+
+version := <span class="st">&quot;0.0.1&quot;</span>
+
+sbtPlugin := <span class="kw">true</span>
+
+scalaVersion := <span class="st">&quot;2.9.2&quot;</span></code></pre>
+<p>编译并发布到本地的ivy库中（测试无误后，可以直接发布到其他共享范围更大的repo中），执行：</p>
+<pre class="sourceCode scala"><code class="sourceCode scala">sbt publish-local</code></pre>
+<p>之后，我们就可以在其他SBT项目的build定义中使用到这个SBT Plugin了，比如我们将其添加到某个SBT项目的${project.root}/project/plugins.sbt（名称不重要，还记得吧？ 注意路径）：</p>
+<pre class="sourceCode scala"><code class="sourceCode scala"><span class="fu">addSbtPlugin</span>(<span class="st">&quot;com.github.fujohnwang&quot;</span> % <span class="st">&quot;hello_sbt_plugin&quot;</span> % <span class="st">&quot;0.0.1&quot;</span>)</code></pre>
+<p>并且将<strong>helloSbtSetting</strong>手动配置到${project.root}/build.sbt中：</p>
+<pre class="sourceCode scala"><code class="sourceCode scala">HelloSBT.<span class="fu">helloSbtSetting</span></code></pre>
+<p>好啦，现在算是万事大吉了，在当前SBT项目直接运行<code>sbt hello-sbt</code>试试吧！</p>
+<p>理论和实践我们都阐明了，现在该说一下在编写SBT Plugin的时候应该注意的一些事情了。</p>
+<p>首先，回头查看HelloSBT的代码实现，读者应该发现，我们将SettingKey的名称和变量名都做了改变，这是因为我们在编写Plugin的时候，要尽量避免命名冲突，所以，通过引入当前Plugin的名称前缀来达到这一目的；</p>
+<p>其次，我们没有将helloSbtSetting加入到<code>Plugin.settings</code>（这里同样注意添加了前缀的命名方式），这就意味着，我们在使用这一Plugin的时候，要手动将这一Setting加到目标项目的build定义中才能使用到它，原因在于，虽然我们可以override并将helloSbtSetting加入<code>Plugin.settings</code>，这样可以让SBT自动加载到当前项目，但一般情况下我们不会这样做，因为在多模块的项目中，这一setting也会自动加载到所有项目上，除非是command类型的Plugin，否则，这种行为是不合适的， 故此，大部分Plugin实现都是提供自己的Setting，并让用户决定是否加载使用；</p>
+<p>其实，编写一个SBT Plugin还要注意很多东西，但这里就不一一列举了，大家可以参考<a href="http://www.scala-sbt.org/release/docs/Detailed-Topics/Best-Practices.html">Best Practices</a>和<a href="http://www.scala-sbt.org/release/docs/Extending/Plugins-Best-Practices.html">Plugins Best Practices</a>这两份SBT Wiki文档，里面详细说明了编写SBT Plugin的一些最佳实践，不过，作为结束，我补充最基本的一点， 即&quot;不要硬编码Plugin实现的任何配置&quot;! 读者可以尝试将dist自定义task转换成一个SBT Plugin，在转换过程中，不妨为&quot;dist&quot;啦， &quot;conf&quot;啦， &quot;bin&quot;啦这些目标目录设立相应的SettingKey并给予默认值，这样就不会像我们的自定义task里似的，直接硬编码这些目录名称了，而且，插件的使用者也可以在使用插件的项目中通过override相应的Plugin的这些SettingKey标志的Setting来提供自定义的值， 怎么样? 动手尝试一把？！</p>
+<pre><code>NOTE
+
+要编写一个SBT Plugin还需要修炼一下SBT的内功，包括搞清楚SBT的Setting系统，Configuration，Command等深层次概念， 这样，在编写SBT Plugin的时候才不会感觉“局促”，^_^</code></pre>
+<h3 id="多模块工程管理multi-module-project"><a href="#TOC"><span class="header-section-number">2.4.4</span> 多模块工程管理(Multi-Module Project)</a></h3>
+<p>对于Maven用户来说， 多模块的工程管理早就不是什么神秘的特性了吧？！ 但笔者实际上对于这种工程实践却一直持保留意见，因为很多时候，架构项目结构的人并没有很好的理解项目中各种实体的粒度与边界之间的合理关系， 很多明明在package层次/粒度可以搞定的事情也往往被纳入到了子工程的粒度中去，这种不合适的粒度和边界选择，一方面反映了最初规划项目结构的人对自身项目的理解不足，另一方面也会为后继的开发和维护人员带来些许的繁琐。所以很多时候，如果某些关注点足以设立一个项目来管理，那我宁愿直接为其设立独立的项目结构，然后让需要依赖的项目依赖它即可以了（大部分时候，我们要解决的就是各个项目之间的依赖关系，不是吗？），当然， 这种做法并非绝对，只是更多的在强调粒度和边界选择的合理性上。</p>
+<p>扯多了，现在让我们来看看在SBT中我们是如何来规划和组织多模块的项目结构的吧！</p>
+<p>包含多个子模块或者子项目的SBT项目跟一个标准的独立的SBT项目相差不多，唯一的差别在于：</p>
+<ol style="list-style-type: decimal">
+<li>build定义中多了对多个子模块/工程的关系的描述；</li>
+<li>项目的根目录下多了多个子模块/工程相应的目录；</li>
+</ol>
+<p>下面是一个多模块工程的典型结构：</p>
+<pre><code>${project.root}
+    - build.sbt
+    + src/main/scala
+    + project
+        - Build.scala
+    + module1
+        - build.sbt
+        + src/main/scala
+    + module2
+        - build.sbt
+        + src/main/scala
+    + module3
+        - build.sbt
+        + src/main/scala</code></pre>
+<p>我们可以发现，除了多了各个子模块/工程相应的目录，其它方面跟一个标准独立的SBT项目无异， 这些子模块/工程与当前项目或者其它子模块/工程之间的关系由当前项目的build定义来“说明”， 当然这种关系的描述是如此的“纠缠”，只能在*.scala形式的build定义中声明， 例如在${project.root}/project/Build.scala)中我们可以简单的定义多个子模块/工程之间的关系如下：</p>
+<pre class="sourceCode scala"><code class="sourceCode scala"><span class="kw">import</span> sbt.<span class="fu">_</span>
+<span class="kw">import</span> Keys.<span class="fu">_</span>
+
+<span class="kw">object</span> MultipleModuleProjectBuild <span class="kw">extends</span> Build {
+    <span class="kw">lazy</span> <span class="kw">val</span> root = <span class="fu">Project</span>(id = <span class="st">&quot;root&quot;</span>,
+                            base = <span class="fu">file</span>(<span class="st">&quot;.&quot;</span>)) <span class="fu">aggregate</span>(sub1, sub2)
+    <span class="kw">lazy</span> <span class="kw">val</span> sub1 = <span class="fu">Project</span>(id = <span class="st">&quot;m1&quot;</span>,
+                            base = <span class="fu">file</span>(<span class="st">&quot;module1&quot;</span>))
+    <span class="kw">lazy</span> <span class="kw">val</span> sub2 = <span class="fu">Project</span>(id = <span class="st">&quot;m2&quot;</span>,
+                            base = <span class="fu">file</span>(<span class="st">&quot;module2&quot;</span>)) <span class="fu">dependsOn</span>(sub3) 
+    <span class="kw">lazy</span> <span class="kw">val</span> sub3 = <span class="fu">Project</span>(id = <span class="st">&quot;m3&quot;</span>,
+                            base = <span class="fu">file</span>(<span class="st">&quot;module3&quot;</span>)) 
+}</code></pre>
+<p>在当前项目的build定义中，我们声明了多个Project实例来对应相应的子项目，并通过Porject的aggregate和dependsOn来进一步申明各个项目之间的关系。 aggregate指明的是一种并行的相互独立的行为，只是这种行为是随父项目执行相应动作而触发的， 比如，在父项目中执行compile，则会同时触发module1和module2两个子模块的编译，只不过，两个子模块之间的执行顺序等行为并无联系； 而dependsOn则说明一种强依赖关系， 像module2这个子项目，因为它依赖module3，所以，编译module2子模块/项目的话，会首先编译module3，然后才是module2，当然，在module3的相应artifact也会加入到module2的classpath中。</p>
+<p>我们既然已经了解了如何在父项目中定义各个子模块/项目之间的关系，下面我们来看一下各个子模块/项目内部的细节吧！ 简单来讲， 每个子模块/项目也可以看作一个标准的SBT项目，但一个很明显的差异在于： <strong>每个子模块/项目下不可以再创建project目录下其下相应的*.scala定义文件（实际上可以创建，但会被SBT忽略）</strong>。不过， 子模块/项目自己下面还是可以使用.sbt形式的build定义的，在各自的.sbt build定义文件中可以指定各个子模块/项目各自的Setting或者依赖，比如version和LibrarayDependencies等。</p>
+<p>一般情况下， SBT下的多模块/工程的组织结构就是如此，即由父项目来规划组织结构和关系，而由各个子模块/项目自治的管理各自的设置和依赖。但这也仅仅是倡导，如果读者愿意，完全可以在父项目的Build定义中添加任何自己想添加的东西，比如将各个子模块/项目的Settings直接挪到父项目的.scala形式的build定义中去（只不过，可能会让这个.scala形式的build定义看起来有些臃肿或者复杂罢了）， 怎么做？ 自己查sbt.Project的scaladoc文档去 ：）</p>
+<p>总的来说，多子模块/工程的项目组织主体上还是以父项目为主体，各个子模块/项目虽然有一定的“经济”独立性，但并非完全自治， 貌似跟未成年人在各自家庭里的地位是相似吧？！ 哈～</p>
+<pre><code>TIPS
+
+在Maven的多子模块/项目的组织结构中，我们很喜欢将所有项目可以重用或者共享的一些设定或者依赖放到父项目的build定义中，在SBT中也是可以的，只要在父项目的.sbt或者.scala形式的build定义中添加即可，不过，要将这些共享的设定的scope设定为ThisBuild， 例如：
+
+    scalaVersion in ThisBuild := &quot;2.9.2&quot;
+
+这样，就不用在每一个项目/模块的build定义中逐一声明要使用的scala版本了。其它的共享设定可以依法炮制哦～</code></pre>
+<h2 id="sbt扩展篇---使用sbt创建可自动补全的命令行应用程序"><a href="#TOC"><span class="header-section-number">2.5</span> SBT扩展篇 - 使用SBT创建可自动补全的命令行应用程序</a></h2>
+<p>参看<a href="http://fujohnwang.github.com/buld-interactive-command-line-app-with-sbt.html">我的这篇博客</a>， 这里不整理重写了， 偷懒ing~</p>
+<h1 id="通过play构建web应用"><a href="#TOC"><span class="header-section-number">3</span> 通过Play构建Web应用</a></h1>
+<h2 id="play框架简介"><a href="#TOC"><span class="header-section-number">3.1</span> Play框架简介</a></h2>
+<p>Play打破Java界web开发的戒律， 抛弃servlet模型， 转而效仿ROR并且自己实现所有东西包括server， 协议处理，变成模型等，总的来说，提高了开发效率，同时生产环境性能也很不错。</p>
+<p>I am not like following things in Play:</p>
+<ol style="list-style-type: decimal">
+<li>template engine handling and default template syntax;
+<ul>
+<li>the template should be replacable, but currently it's bound to only one impl.</li>
+<li>even the template solution is aimed to be treated as scala code, they are not looks like scala code</li>
+<li>template is template, the framework should be view-specific, context and merge part can be made flexible, I think</li>
+</ul></li>
+<li>if sbt is used, why don't follow the convention of it by putting souce code and resources under src/main(although configuration can be adjusted to do that)?</li>
+<li>it's maybe contradiction, but I am still think a framework should give people opportunities to choose their preferred tools, say, Data access framework.</li>
+</ol>
+<p>but I should say that <code>WS</code>, <code>Promise</code>, <code>OpenId</code> APIs are cool.</p>
+<h2 id="play的安装与配置"><a href="#TOC"><span class="header-section-number">3.2</span> Play的安装与配置</a></h2>
+<p>下载，并解压到任何目录， 将解压目录加到PATH环境变量中， DONE！</p>
+<h2 id="开始play"><a href="#TOC"><span class="header-section-number">3.3</span> 开始Play</a></h2>
+<pre><code>$ play new [first_app]
+$ cd [first_app]
+$ play run</code></pre>
+<h2 id="play基础篇"><a href="#TOC"><span class="header-section-number">3.4</span> Play基础篇</a></h2>
+<h3 id="action"><a href="#TOC"><span class="header-section-number">3.4.1</span> Action</a></h3>
+<p>Action（play.api.mvc.Action）的概念很简单，可以简单理解为只是一个Request=&gt;Result的函数， 即接收到客户端HTTP请求之后，将其转换成某种处理结果并返回。</p>
+<p>当然， 具体要复杂一些， Action的定义如下：</p>
+<pre class="sourceCode scala"><code class="sourceCode scala"><span class="kw">trait</span> Action[A] <span class="kw">extends</span> (Request[A] =&gt; Result) {
+  <span class="kw">def</span> parser: BodyParser[A]
+}
+<span class="kw">trait</span> Request[+A] <span class="kw">extends</span> RequestHeader {
+  <span class="kw">def</span> body: A
+}</code></pre>
+<p>Action拥有一个BodyParser用来将具体的HTTP请求体(request body)转换为指定的类型A，然后再构建成强类型的Request[A]以传给开发者使用，一般情况下，开发者不需要关注请求体是如何解析的，除非有特殊需求，这个时候才需要自己实现相应的BodyParser。</p>
+<h3 id="result"><a href="#TOC"><span class="header-section-number">3.4.2</span> Result</a></h3>
+<p>Result有许多现成的实现类或者helper companion object可以用，比如Ok， TODO， BadRequest等.</p>
+<p>这些实现类可以根据传入的参数自动设置HTTP Response的Headers， 比如Content-Type， 但我们也可以通过相应的方法调用自定义设置相应的Headers， 比如:</p>
+<pre class="sourceCode scala"><code class="sourceCode scala"><span class="kw">val</span> htmlResult = <span class="fu">Ok</span>(&lt;h1&gt;Hello World!&lt;/h1&gt;).<span class="fu">as</span>(<span class="st">&quot;text/html&quot;</span>)
+<span class="kw">val</span> htmlResult = <span class="fu">Ok</span>(&lt;h1&gt;Hello World!&lt;/h1&gt;).<span class="fu">as</span>(HTML)
+<span class="fu">Ok</span>(<span class="st">&quot;Hello World!&quot;</span>).<span class="fu">withHeaders</span>(
+  CACHE_CONTROL -&gt; <span class="st">&quot;max-age=3600&quot;</span>, 
+  ETAG -&gt; <span class="st">&quot;xx&quot;</span>
+)
+<span class="fu">Ok</span>(<span class="st">&quot;Hello world&quot;</span>).<span class="fu">withCookies</span>(
+  <span class="fu">Cookie</span>(<span class="st">&quot;theme&quot;</span>, <span class="st">&quot;blue&quot;</span>)
+)</code></pre>
+<h3 id="routes"><a href="#TOC"><span class="header-section-number">3.4.3</span> Routes</a></h3>
+<p>Routes是一堆Router的集合， 而每一个Router的任务也很简单，也是做函数转换，即：</p>
+<pre><code>(HTTP Method Type, Request URI) =&gt; Action</code></pre>
+<p>也就是说，每一个route规则都会根据HTTP请求的Method类型加上请求的路径， 将当前HTTP请求转给相应Action进行处理（每个Action定义了具体的处理逻辑， remember？）</p>
+<p>HTTP Method包括：</p>
+<ol style="list-style-type: decimal">
+<li>GET</li>
+<li>POST</li>
+<li>PUT</li>
+<li>DELETE</li>
+<li>HEAD</li>
+</ol>
+<p>请求路径格式：</p>
+<ol style="list-style-type: decimal">
+<li>静态路径(Static Path)
+<ul>
+<li><code>GET   /clients/all              controllers.Clients.list()</code></li>
+</ul></li>
+<li>动态路径(Dynamic Path) - 以<code>:</code>, <code>*</code>, <code>$</code>作为起始标志
+<ul>
+<li><code>GET   /clients/:id          controllers.Clients.show(id: Long)</code></li>
+<li><code>GET   /files/*name          controllers.Application.download(name)</code></li>
+<li><code>GET   /clients/$id&lt;[0-9]+&gt;  controllers.Clients.show(id: Long)</code></li>
+</ul></li>
+</ol>
+<p>Action的调用部分， 如果action方法的参数是String类型，则不需要声明参数类型； 如果声明了方法的参数类型，比如id:Long，则Play将根据声明的类型进行类型转换。</p>
+<p>如果请求的路径中没有声明相应的参数，而action方法有调用参数，则该参数将从QueryString中查找并转换。</p>
+<p>Route可以从HTTP Method类型+请求的URI转换为相应的Action，Route也可以从相应的Action转换成对应的HTTP Method类型+请求URI，这称之为reverse route， 比如：</p>
+<pre class="sourceCode scala"><code class="sourceCode scala"><span class="co">// Redirect to /hello/Bob</span>
+<span class="kw">def</span> helloBob = Action {
+    <span class="fu">Redirect</span>(routes.<span class="fu">Application</span>.<span class="fu">hello</span>(<span class="st">&quot;Bob&quot;</span>))    
+}</code></pre>
+<h3 id="session-and-flash"><a href="#TOC"><span class="header-section-number">3.4.4</span> Session And Flash</a></h3>
+<p>都以Cookie形势存储，所以有存储限制（4k），同时意味着也可以操纵Headers的形势来操纵它们， 比如：</p>
+<pre class="sourceCode scala"><code class="sourceCode scala"><span class="fu">Ok</span>(<span class="st">&quot;Welcome!&quot;</span>).<span class="fu">withSession</span>(
+  <span class="st">&quot;connected&quot;</span> -&gt; <span class="st">&quot;user@gmail.com&quot;</span>
+)
+<span class="fu">Ok</span>(<span class="st">&quot;Hello World!&quot;</span>).<span class="fu">withSession</span>(
+  session + (<span class="st">&quot;saidHello&quot;</span> -&gt; <span class="st">&quot;yes&quot;</span>)
+)
+<span class="fu">Ok</span>(<span class="st">&quot;Theme reset!&quot;</span>).<span class="fu">withSession</span>(
+  session - <span class="st">&quot;theme&quot;</span>
+)</code></pre>
+<pre class="sourceCode scala"><code class="sourceCode scala"><span class="kw">def</span> index = Action { <span class="kw">implicit</span> request =&gt;
+  Ok {
+    flash.<span class="fu">get</span>(<span class="st">&quot;success&quot;</span>).<span class="fu">getOrElse</span>(<span class="st">&quot;Welcome!&quot;</span>)
+  }
+}
+<span class="kw">def</span> save = Action {
+  <span class="fu">Redirect</span>(<span class="st">&quot;/home&quot;</span>).<span class="fu">flashing</span>(
+    <span class="st">&quot;success&quot;</span> -&gt; <span class="st">&quot;The item has been created&quot;</span>
+  )
+}</code></pre>
+<p>其中， Flash与Session的区别在于， Flash的生命周期只延续到下一个请求，而Session则跨越多个请求。一般只用Flash来简单的传递某些成功或者错误信息。</p>
+<h3 id="模版引擎与模版"><a href="#TOC"><span class="header-section-number">3.4.5</span> 模版引擎与模版</a></h3>
+<p>TBD</p>
+<h2 id="play进阶篇"><a href="#TOC"><span class="header-section-number">3.5</span> Play进阶篇</a></h2>
+<ol style="list-style-type: decimal">
+<li>异步化</li>
+<li>插件化</li>
+<li>其他</li>
+</ol>
+<h3 id="play中的异步化http编程async-http-programming-in-play"><a href="#TOC"><span class="header-section-number">3.5.1</span> Play中的异步化HTTP编程(Async HTTP Programming in Play)</a></h3>
+<p>简单点儿来说， 异步化编程就是从原来的直接同步执行逻辑并返回Result的Action实现，转向可以异步执行处理逻辑并返回AsyncResult的Action实现。</p>
+<p>AsyncResult可以通过<code>Async{…}</code>方法，从某个<code>Promise[Result]</code>实例来构建。 一个Promise从字面上来理解就是它会保证将来不一定某个时间点会返回你期望的处理结果， 并且Promise与Promise之间可以组合以串联执行：</p>
+<p><code>scala val promiseOfPIValue: Promise[Double] = computePIAsynchronously() val promiseOfResult: Promise[Result] = promiseOfPIValue.map { pi =&gt;   Ok(&quot;PI value computed: &quot; + pi)     }</code> 而创建一个Promise最常用的方式就是直接将处理逻辑丢出去给另外一个线程去处理，比如通过Akka:</p>
+<pre class="sourceCode scala"><code class="sourceCode scala"><span class="kw">val</span> promiseOfInt: Promise[Int] = Akka.<span class="fu">future</span> {
+  <span class="fu">intensiveComputation</span>()
+}</code></pre>
+<p>综上， 一个简单的异步Action实现就看起来是如此的样子：</p>
+<p><code>scala def index = Action {   val promiseOfInt = Akka.future { intensiveComputation() }   Async {     promiseOfInt.map(i =&gt; Ok(&quot;Got result: &quot; + i))   } }</code> fucking simple!</p>
+<blockquote>
+<p><strong>有关异步话题的延伸</strong></p>
+<p>将一个线程内的执行逻辑丢给另一个线程去处理的异步化方式，实际上，从本质上来讲不会带来太多的收益（原因自己想）， 只有整个执行的pipeline内所有处理步骤都异步化，并且结合IO多路复用等措施，才会带来可观的收益(比如最直接的收益就是可以提高单机的硬件资源利用率，在大集群的情况下，可以大幅削减硬件以及运维开销)，否则，做的异步化很多时候是在干拆东墙补西墙的勾当，当然啦，笔者并不排除有些处理调度规划恰当的情况下的异步化的合理性。</p>
+</blockquote>
+<h3 id="streaming-http-programming"><a href="#TOC"><span class="header-section-number">3.5.2</span> Streaming HTTP Programming</a></h3>
+<p>TBD</p>
+<h2 id="问题"><a href="#TOC"><span class="header-section-number">3.6</span> 问题</a></h2>
+<ol style="list-style-type: decimal">
+<li>资源的管理，服务实例的注册与使用在Play中通常是如何做的？ 推荐什么样的实践方式？！</li>
+<li>Play中所有controller中的action方法定义为static的目的是啥？！</li>
+</ol>
+<h2 id="play扩展篇"><a href="#TOC"><span class="header-section-number">3.7</span> Play扩展篇</a></h2>
+<pre><code>实例待定， 构建基于JMX的监控web应用？
+外汇交易系统雏形？！
+Finance Desk Dashboard？！</code></pre>
+<h1 id="走进akka的并发世界"><a href="#TOC"><span class="header-section-number">4</span> 走进Akka的(并发)世界</a></h1>
+<h2 id="akka框架简介"><a href="#TOC"><span class="header-section-number">4.1</span> Akka框架简介</a></h2>
+<h2 id="akka的安装与配置"><a href="#TOC"><span class="header-section-number">4.2</span> Akka的安装与配置</a></h2>
+<h2 id="helloakka"><a href="#TOC"><span class="header-section-number">4.3</span> Hello，Akka</a></h2>
+<h2 id="akka进阶"><a href="#TOC"><span class="header-section-number">4.4</span> Akka进阶</a></h2>
+<h2 id="akka扩展篇---使用akka构建实时流计算框架"><a href="#TOC"><span class="header-section-number">4.5</span> Akka扩展篇 - 使用Akka构建实时流计算框架</a></h2>
+<h1 id="使用slick进行数据访问"><a href="#TOC"><span class="header-section-number">5</span> 使用Slick进行数据访问</a></h1>
+<h2 id="references"><a href="#TOC"><span class="header-section-number">5.1</span> References</a></h2>
+<ol style="list-style-type: decimal">
+<li><a href="http://mackler.org/LearningSlick/">Learning Slick : A Tutorial</a> # 使用ScalaTest进行单元测试</li>
+</ol>
+<h1 id="使用scalaz强化函数式编程"><a href="#TOC"><span class="header-section-number">6</span> 使用Scalaz强化函数式编程</a></h1>
+<h1 id="参考资料"><a href="#TOC"><span class="header-section-number">7</span> 参考资料</a></h1>
+<ol style="list-style-type: decimal">
+<li><a href="https://github.com/harrah/xsbt/wiki">SBT Wiki Documentation</a></li>
+</ol>
+<p>2.</p>
+<div class="footnotes">
+<hr />
+<ol>
+<li id="fn1"><p>SBT的增量编译支持因为如此优秀，已经剥离为Zinc，可被Eclipse, Maven,Gradle等使用<a href="#fnref1">↩</a></p></li>
+<li id="fn2"><p>at实际上是String类型进行了隐式类型转换(Implicit conversion)后目标类型的方法名<a href="#fnref2">↩</a></p></li>
+<li id="fn3"><p>实际上，只有那些定义了扩展自sbt.Build类的scala文件，才会被认为是build定义<a href="#fnref3">↩</a></p></li>
+<li id="fn4"><p>这里的发布更多是指特殊的发布形式，比如提供完整的下载包给用户，直接打包成部署包等。一般情况下，如果用Maven或者SBT，可以直接publish到相应的Maven或者Ivy Repository中<a href="#fnref4">↩</a></p></li>
+<li id="fn5"><p>plugins.sbt的名称只是便于识别，实际上，SBT只关注.sbt的后缀，具体名称是不关心的，因为plugins.sbt本质上也是一个SBT项目的build定义文件，除了在其中配置Plugin，我们同样可以添加第三方依赖， 追加其他Setting等，跟一般的.sbt配置文件无异<a href="#fnref5">↩</a></p></li>
+<li id="fn6"><p>在SBT中，使用ModuleID来抽象和标志相应三方库的标志<a href="#fnref6">↩</a></p></li>
+</ol>
+</div>
+</body>
+</html>
