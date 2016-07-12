@@ -1,7 +1,7 @@
 # 通过Play构建Web应用
 
 ## Play框架简介
-Play打破Java界web开发的戒律， 抛弃servlet模型， 转而效仿ROR并且自己实现所有东西包括server， 协议处理，变成模型等，总的来说，提高了开发效率，同时生产环境性能也很不错。
+Play打破Java界web开发的戒律， 抛弃servlet模型， 转而效仿ROR并且自己实现所有东西包括server， 协议处理，编程模型等，总的来说，提高了开发效率，同时生产环境性能也很不错。
 
 I am not like following things in Play:
 
