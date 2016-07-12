@@ -195,7 +195,23 @@ addSbtPlugin("net.virtual-void" % "sbt-dependency-graph" % "0.6.0")
 
 > TIPS
 > 
-> 在sbt0.7.x时代， 我们只要创建项目目录，然后在项目目录下敲入sbt，则应该创建哪些需要的目录和文件就会由sbt自动为我们生成， 而sbt0.10之后，这项福利就没有了。 所以，刚开始，我们可能会认为要很苦逼的执行一长串命令来生成相应的目录和文件：
+> 在sbt0.7.x时代， 我们只要创建项目目录，然后在项目目录下敲入sbt，则应该创建哪些需要的目录和文件就会由sbt自动为我们生成， 而sbt0.10之后，可以使用typesafe官方的eclipse插件来生成目录以及日后导入eclipse中。
+> 在plugin.sbt中添加eclipse插件:
+> <pre>
+	addSbtPlugin("com.typesafe.sbteclipse" % "sbteclipse-plugin" % "2.1.0")
+</pre>
+> 然后在交互模式下输入
+> <pre>
+	$sbt eclipse
+</pre>
+> 就会自动生成src以及其子目录,详见[sbteclipse](https://github.com/typesafehub/sbteclipse).
+> 如果使用别的IDE工具，那么在*nix下，可以输入
+> <pre>
+	$ mkdir -p {project_path}/src/{main,test}/{java,resource,scala}
+</pre>
+> 生成相应的目录
+
+> 所以，刚开始，我们可能会认为要很苦逼的执行一长串命令来生成相应的目录和文件：
 > <pre>
 	$ touch build.sbt
 	$ mkdir src
